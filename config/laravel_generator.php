@@ -140,7 +140,17 @@ return [
 
         'resources' => false,
 
-        'excluded_fields' => ['id'], // Array of columns that doesn't required while creating module
+        'excluded_fields' => [
+            'id',
+            'created_by',
+            'updated_by',
+            'deleted_by',
+            'company_id'
+        ], // Array of columns that doesn't required while creating module,
+        
+        'separate_rules' => true,
+        
+        'body_parameter' => true
     ],
 
     /*
