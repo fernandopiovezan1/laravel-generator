@@ -283,7 +283,7 @@ class ModelGenerator extends BaseGenerator
         return str_replace('$TIMESTAMPS$', $replace, $templateData);
     }
 
-    private function generateRules()
+    public function generateRules()
     {
         $dont_require_fields = config('infyom.laravel_generator.options.hidden_fields', [])
                 + config('infyom.laravel_generator.options.excluded_fields', $this->excluded_fields);
