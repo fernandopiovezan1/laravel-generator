@@ -40,6 +40,16 @@ class APIRequestGenerator extends BaseGenerator
         $templateData = get_template('api.request.create_request', 'laravel-generator');
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
+        if (config('infyom.laravel_generator.options.separate_rules', false)) {
+            $modelGenerator = new ModelGenerator($this->commandData);    
+            $rules = $modelGenerator->generateRules();
+            $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $rules), $templateData);
+        }
+
+        if (config('infyom.laravel_generator.options.separate_rules', false)) {
+            $bodyParameters = $this->generateBodyParameters();
+            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $bodyParameters), $templateData);
+        }
 
         FileUtil::createFile($this->path, $this->createFileName, $templateData);
 
@@ -56,6 +66,15 @@ class APIRequestGenerator extends BaseGenerator
         $templateData = get_template('api.request.update_request', 'laravel-generator');
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
+        if (config('infyom.laravel_generator.options.separate_rules', false)) {
+            $rules = $modelGenerator->generateRules();
+            $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $rules), $templateData);
+        }
+
+        if (config('infyom.laravel_generator.options.separate_rules', false)) {
+            $bodyParameters = $this->generateBodyParameters();
+            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $bodyParameters), $templateData);
+        }
 
         FileUtil::createFile($this->path, $this->updateFileName, $templateData);
 
