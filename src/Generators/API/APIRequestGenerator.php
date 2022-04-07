@@ -20,37 +20,39 @@ class APIRequestGenerator extends BaseGenerator
 
     /** @var string */
     private $updateFileName;
-
+ 
+    /** @var ModelGenerator */
+    private $modelGenerator;
+    
     public function __construct(CommandData $commandData)
     {
         $this->commandData = $commandData;
         $this->path = $commandData->config->pathApiRequest;
         $this->createFileName = 'Create'.$this->commandData->modelName.'APIRequest.php';
         $this->updateFileName = 'Update'.$this->commandData->modelName.'APIRequest.php';
+        $this->modelGenerator = new ModelGenerator($this->commandData);
     }
 
     public function generate()
     {
+        
         $this->generateCreateRequest();
         $this->generateUpdateRequest();
     }
 
     private function generateCreateRequest()
     {
+        
         $templateData = get_template('api.request.create_request', 'laravel-generator');
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
         if (config('infyom.laravel_generator.options.separate_rules', false)) {
-            $modelGenerator = new ModelGenerator($this->commandData);    
-            $rules = $modelGenerator->generateRules();
-            $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $rules), $templateData);
+            $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $this->modelGenerator->generateRules()), $templateData);
         }
-
-        if (config('infyom.laravel_generator.options.separate_rules', false)) {
-            $bodyParameters = $this->generateBodyParameters();
-            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $bodyParameters), $templateData);
+        if (config('infyom.laravel_generator.options.body_parameter', false)) {
+            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $this->generateBodyParameters()), $templateData);
         }
-
+        
         FileUtil::createFile($this->path, $this->createFileName, $templateData);
 
         $this->commandData->commandComment("\nCreate Request created: ");
@@ -59,21 +61,17 @@ class APIRequestGenerator extends BaseGenerator
 
     private function generateUpdateRequest()
     {
-        $modelGenerator = new ModelGenerator($this->commandData);
-        $rules = $modelGenerator->generateUniqueRules();
+        $rules = $this->modelGenerator->generateUniqueRules();
         $this->commandData->addDynamicVariable('$UNIQUE_RULES$', $rules);
 
         $templateData = get_template('api.request.update_request', 'laravel-generator');
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
         if (config('infyom.laravel_generator.options.separate_rules', false)) {
-            $rules = $modelGenerator->generateRules();
-            $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $rules), $templateData);
+            $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $this->modelGenerator->generateRules()), $templateData);
         }
-
-        if (config('infyom.laravel_generator.options.separate_rules', false)) {
-            $bodyParameters = $this->generateBodyParameters();
-            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $bodyParameters), $templateData);
+        if (config('infyom.laravel_generator.options.body_parameter', false)) {
+            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $this->generateBodyParameters()), $templateData);
         }
 
         FileUtil::createFile($this->path, $this->updateFileName, $templateData);
@@ -91,5 +89,22 @@ class APIRequestGenerator extends BaseGenerator
         if ($this->rollbackFile($this->path, $this->updateFileName)) {
             $this->commandData->commandComment('Update API Request file deleted: '.$this->updateFileName);
         }
+    }
+    
+    public function generateBodyParameters()
+    {
+        $dont_require_fields = config('infyom.laravel_generator.options.hidden_fields', [])
+            + config('infyom.laravel_generator.options.excluded_fields');
+        
+        $bodyParameters = [];
+
+        foreach ($this->commandData->fields as $field) {
+            if (!$field->isPrimary && !in_array($field->name, $dont_require_fields)) {
+                $bodyParameter = "'".$field->name."' => ['description' => '".$field->description."']";
+                $bodyParameters[] = $bodyParameter;
+            }
+        }
+        
+        return$bodyParameters;
     }
 }
