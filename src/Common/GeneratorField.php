@@ -30,6 +30,7 @@ class GeneratorField
     public $inIndex = true;
     public $inView = true;
     public $isNotNull = false;
+    public $isFullText = false;
 
     /** @var int */
     public $numberDecimalPoints = 2;

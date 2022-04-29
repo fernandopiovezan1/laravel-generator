@@ -38,10 +38,11 @@ class RepositoryGenerator extends BaseGenerator
         }
 
         $templateData = str_replace('$FIELDS$', implode(','.infy_nl_tab(1, 2), $searchables), $templateData);
+        $templateData = str_replace('$FULLTEXT$', implode(','.infy_nl_tab(1, 2), $this->generateFullTextFields()), $templateData);
 
         $docsTemplate = get_template('docs.repository', 'laravel-generator');
         $docsTemplate = fill_template($this->commandData->dynamicVars, $docsTemplate);
-        $docsTemplate = str_replace('$GENERATE_DATE$', date('F j, Y, g:i a T'), $docsTemplate);
+        $docsTemplate = str_replace('$GENERATE_DATE$', date('F j, Y, g:i a'), $docsTemplate);
 
         $templateData = str_replace('$DOCS$', $docsTemplate, $templateData);
 
@@ -49,6 +50,17 @@ class RepositoryGenerator extends BaseGenerator
 
         $this->commandData->commandComment("\nRepository created: ");
         $this->commandData->commandInfo($this->fileName);
+    }
+    
+    public function generateFullTextFields()
+    {
+        $fullText = [];
+        foreach ($this->commandData->fields as $field) {
+            if ($field->isFullText) {
+                $fullText[] = "'".$field->name."'";
+            }
+        }
+        return $fullText;
     }
 
     public function rollback()

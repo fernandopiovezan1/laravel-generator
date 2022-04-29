@@ -40,6 +40,7 @@ class TableFieldsGenerator
 
     /** @var array */
     public $timestamps;
+    public $fullTextIndices;
 
     /** @var AbstractSchemaManager */
     private $schemaManager;
@@ -88,7 +89,8 @@ class TableFieldsGenerator
                 $this->columns[] = $column;
             }
         }
-
+        
+        $this->fullTextIndices = $this->getFullTextIndexOfTable($tableName);
         $this->primaryKey = $this->getPrimaryKeyOfTable($tableName);
         $this->timestamps = static::getTimestampFieldNames();
         $this->defaultSearchable = config('infyom.laravel_generator.options.tables_searchable_default', false);
@@ -176,6 +178,25 @@ class TableFieldsGenerator
 
         return $column ? $column->getColumns()[0] : '';
     }
+    
+    public function getFullTextIndexOfTable($tableName)
+    {
+        $indexes = $this->schemaManager->listTableDetails($tableName)->getIndexes();
+        $complete = false;
+        $fullTextIndices = [];
+
+        foreach ($indexes as $index) {
+            foreach ($index->getFlags() as $flag) {
+                if ($flag == 'fulltext' && !$complete) {
+                    foreach ($index->getColumns() as $column) {
+                        $fullTextIndices[] = $column;
+                        $complete = true;
+                    }
+                }
+            }
+        }
+        return $fullTextIndices;
+    }
 
     /**
      * Get timestamp columns from config.
@@ -243,6 +264,11 @@ class TableFieldsGenerator
 
         return $field;
     }
+    
+    private function checkForFullText(GeneratorField $field)
+    {
+        return in_array($field->name, $this->fullTextIndices);
+    }
 
     /**
      * Generates field.
@@ -259,6 +285,7 @@ class TableFieldsGenerator
         $field->name = $column->getName();
         $field->parseDBType($dbType, $column);
         $field->parseHtmlInput($htmlType);
+        $field->isFullText = $this->checkForFullText($field);
 
         return $this->checkForPrimary($field);
     }

@@ -20,7 +20,12 @@ class APIRequestGenerator extends BaseGenerator
 
     /** @var string */
     private $updateFileName;
- 
+    
+    /** @var array */
+    private $rules;
+
+    /** @var array */
+    private $bodyParameters;
     /** @var ModelGenerator */
     private $modelGenerator;
     
@@ -35,6 +40,13 @@ class APIRequestGenerator extends BaseGenerator
 
     public function generate()
     {
+        if (config('infyom.laravel_generator.options.separate_rules', false)) {
+            $this->rules = $this->modelGenerator->generateRules();
+        }
+
+        if (config('infyom.laravel_generator.options.body_parameter', false)) {
+            $this->bodyParameters = $this->generateBodyParameters();
+        }
         
         $this->generateCreateRequest();
         $this->generateUpdateRequest();
@@ -50,7 +62,7 @@ class APIRequestGenerator extends BaseGenerator
             $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $this->modelGenerator->generateRules()), $templateData);
         }
         if (config('infyom.laravel_generator.options.body_parameter', false)) {
-            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $this->generateBodyParameters()), $templateData);
+            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $this->bodyParameters), $templateData);
         }
         
         FileUtil::createFile($this->path, $this->createFileName, $templateData);
@@ -61,7 +73,8 @@ class APIRequestGenerator extends BaseGenerator
 
     private function generateUpdateRequest()
     {
-        $rules = $this->modelGenerator->generateUniqueRules();
+        $modelGenerator = new ModelGenerator($this->commandData);
+        $rules = $modelGenerator->generateUniqueRules();
         $this->commandData->addDynamicVariable('$UNIQUE_RULES$', $rules);
 
         $templateData = get_template('api.request.update_request', 'laravel-generator');
@@ -71,7 +84,7 @@ class APIRequestGenerator extends BaseGenerator
             $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $this->modelGenerator->generateRules()), $templateData);
         }
         if (config('infyom.laravel_generator.options.body_parameter', false)) {
-            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $this->generateBodyParameters()), $templateData);
+            $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $this->bodyParameters), $templateData);
         }
 
         FileUtil::createFile($this->path, $this->updateFileName, $templateData);
