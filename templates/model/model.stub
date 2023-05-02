@@ -2,23 +2,40 @@
 
 namespace $NAMESPACE_MODEL$;
 
-use $NAMESPACE_MODEL_EXTEND$ as Model;
-$SOFT_DELETE_IMPORT$
-$HAS_FACTORY_IMPORT$
+use App\Traits\CustomSoftDelete;
+use Rennokki\QueryCache\Traits\QueryCacheable;
 
-$DOCS$
-class $MODEL_NAME$ extends Model
+class $MODEL_NAME$ extends BaseModel
 {
-$SOFT_DELETE$
-$HAS_FACTORY$
-    public $table = '$TABLE_NAME$';
-    $TIMESTAMPS$
-$SOFT_DELETE_DATES$
-$CONNECTION$
-$PRIMARY$
+    use CustomSoftDelete, QueryCacheable;
+
+    /**
+     * Time in seconds to live Cache
+     *
+     * @var int|\DateTime
+     */
+    public int|\DateTime $cacheFor = 3600;
+
     public $fillable = [
         $FIELDS$
     ];
+
+    /**
+     * Validation rules
+     *
+     * @var array
+     */
+    public static array $rules = [
+        $RULES$
+    ];
+$SOFT_DELETE_DATES$
+    /**
+     * Invalidate the cache automatically
+     * upon update in the database.
+     *
+     * @var bool
+     */
+    protected static bool $flushCacheOnUpdate = true;
 
     /**
      * The attributes that should be casted to native types.
@@ -30,13 +47,28 @@ $PRIMARY$
     ];
 
     /**
-     * Validation rules
+     * The attributes that should be hidden for serialization.
      *
      * @var array
      */
-    public static $rules = [
-        $RULES$
+    protected $hidden = [
+        'deleted_by',
+        'deleted_at'
     ];
+
+    /**
+     * Responsável por determinar quais relacionamentos
+     * serão usados nas consultas
+     * @var array
+     */
+    protected array $relationsBySearch = [];
+
+    /**
+     * Responsável por trazer os relacionamentos
+     * montados sem necessidade de chamada
+     * @var array
+     */
+    protected $with = [];
 
     $RELATIONS$
 }

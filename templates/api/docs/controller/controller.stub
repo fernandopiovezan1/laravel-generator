@@ -1,4 +1,6 @@
 /**
  * Class $MODEL_NAME$Controller
  * @package $NAMESPACE_API_CONTROLLER$
+ * @group $MODEL_NAME_PLURAL_CAMEL$
+ * Endpoint de gerenciamento de $MODEL_NAME_PLURAL_HUMAN$
  */

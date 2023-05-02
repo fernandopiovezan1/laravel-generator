@@ -1,10 +1,8 @@
 /**
-     * Remove the specified $MODEL_NAME$ from storage.
-     * DELETE /$MODEL_NAME_PLURAL_CAMEL$/{id}
-     *
      * @param int $id
-     *
+     * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
-     *
-     * @return Response
+     * @urlParam id integer required Identificador do registro.
+     * @responseFile status=401 storage/response/error/401.json
+     * @responseFile status=404 storage/response/error/404.json {"message": "$MODEL_NAME_HUMAN$ não encontrado"}
      */

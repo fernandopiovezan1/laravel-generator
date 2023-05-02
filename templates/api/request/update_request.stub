@@ -3,9 +3,8 @@
 namespace $NAMESPACE_API_REQUEST$;
 
 use $NAMESPACE_MODEL$\$MODEL_NAME$;
-use InfyOm\Generator\Request\APIRequest;
 
-class Update$MODEL_NAME$APIRequest extends APIRequest
+class Update$MODEL_NAME$APIRequest extends ResponseAPIRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +23,13 @@ class Update$MODEL_NAME$APIRequest extends APIRequest
      */
     public function rules()
     {
-        $rules = $MODEL_NAME$::$rules;
-        $UNIQUE_RULES$
-        return $rules;
+        return [
+            $RULES$
+        ];
     }
+    
+    public static function bodyParameters(): array
+    {
+        return Create$MODEL_NAME$APIRequest::bodyParameters();
+    }    
 }

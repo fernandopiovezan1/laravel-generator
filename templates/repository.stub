@@ -3,7 +3,6 @@
 namespace $NAMESPACE_REPOSITORY$;
 
 use $NAMESPACE_MODEL$\$MODEL_NAME$;
-use $NAMESPACE_APP$\Repositories\BaseRepository;
 
 $DOCS$
 class $MODEL_NAME$Repository extends BaseRepository
@@ -11,8 +10,15 @@ class $MODEL_NAME$Repository extends BaseRepository
     /**
      * @var array
      */
-    protected $fieldSearchable = [
+    protected array $fieldSearchable = [
         $FIELDS$
+    ];
+    
+    /** 
+     * @var array campos que fazem parte do índice FullText da tabela
+     */
+    protected array $fieldsFullText = [
+        $FULLTEXT$
     ];
 
     /**
@@ -27,7 +33,7 @@ class $MODEL_NAME$Repository extends BaseRepository
 
     /**
      * Configure the Model
-     **/
+     */
     public function model()
     {
         return $MODEL_NAME$::class;

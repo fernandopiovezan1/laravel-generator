@@ -150,7 +150,9 @@ return [
         
         'separate_rules' => true,
         
-        'body_parameter' => true
+        'body_parameter' => true,
+        
+        'base_model' => true
     ],
 
     /*

@@ -8,13 +8,17 @@ use $NAMESPACE_MODEL$\$MODEL_NAME$;
 use $NAMESPACE_REPOSITORY$\$MODEL_NAME$Repository;
 use Illuminate\Http\Request;
 use $NAMESPACE_APP$\Http\Controllers\AppBaseController;
-use Response;
 
-$DOC_CONTROLLER$
+/**
+ * Class $MODEL_NAME$Controller
+ * @package $NAMESPACE_API_CONTROLLER$
+ * @group $MODEL_NAME_PLURAL$
+ * Endpoint de gerenciamento de $MODEL_NAME_PLURAL_HUMAN$
+ */
 class $MODEL_NAME$APIController extends AppBaseController
 {
     /** @var  $MODEL_NAME$Repository */
-    private $$MODEL_NAME_CAMEL$Repository;
+    private $MODEL_NAME$Repository $$MODEL_NAME_CAMEL$Repository;
 
     public function __construct($MODEL_NAME$Repository $$MODEL_NAME_CAMEL$Repo)
     {
@@ -24,13 +28,21 @@ class $MODEL_NAME$APIController extends AppBaseController
     $DOC_INDEX$
     public function index(Request $request)
     {
-        $$MODEL_NAME_PLURAL_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository->all(
-            $request->except(['skip', 'limit']),
-            $request->get('skip'),
-            $request->get('limit')
-        );
+        if ($request->exists('search')) {
+            $$MODEL_NAME_PLURAL_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository
+                ->advancedSearch($request)
+                ->orderByRaw('deleted_at asc,' . ($request->get('order') ?? 'id') .
+                             ' ' . ($request->get('direction') ?? 'DESC'))
+                ->paginate($request->get('limit'));
+        } else {
+            $$MODEL_NAME_PLURAL_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository
+                ->findAllFieldsAnd($request)
+                ->orderByRaw('deleted_at asc,' . ($request->get('order') ?? 'id') .
+                             ' ' . ($request->get('direction') ?? 'DESC'))
+                ->paginate($request->get('limit'));
+        }
 
-        return $this->sendResponse($$MODEL_NAME_PLURAL_CAMEL$->toArray(), '$MODEL_NAME_PLURAL_HUMAN$ retrieved successfully');
+        return $this->sendResponse($$MODEL_NAME_PLURAL_CAMEL$->toArray(), '$MODEL_NAME_PLURAL_HUMAN$ recuperados com sucesso');
     }
 
     $DOC_STORE$
@@ -39,25 +51,29 @@ class $MODEL_NAME$APIController extends AppBaseController
         $input = $request->all();
 
         $$MODEL_NAME_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository->create($input);
-
-        return $this->sendResponse($$MODEL_NAME_CAMEL$->toArray(), '$MODEL_NAME_HUMAN$ saved successfully');
+        
+        return $this->sendResponse($$MODEL_NAME_CAMEL$->toArray(), '$MODEL_NAME_HUMAN$ salvo com sucesso');
     }
 
     $DOC_SHOW$
-    public function show($id)
+    public function show(int $id)
     {
+        if (!is_numeric($id)) {
+            return $this->sendError('Parâmetro incorreto');
+        }
+        
         /** @var $MODEL_NAME$ $$MODEL_NAME_CAMEL$ */
         $$MODEL_NAME_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository->find($id);
 
         if (empty($$MODEL_NAME_CAMEL$)) {
-            return $this->sendError('$MODEL_NAME_HUMAN$ not found');
+            return $this->sendError('$MODEL_NAME_HUMAN$ não encontrado(a)');
         }
 
-        return $this->sendResponse($$MODEL_NAME_CAMEL$->toArray(), '$MODEL_NAME_HUMAN$ retrieved successfully');
+        return $this->sendResponse($$MODEL_NAME_CAMEL$->toArray(), '$MODEL_NAME_HUMAN$ recuperado com sucesso');
     }
 
     $DOC_UPDATE$
-    public function update($id, Update$MODEL_NAME$APIRequest $request)
+    public function update(int $id, Update$MODEL_NAME$APIRequest $request)
     {
         $input = $request->all();
 
@@ -65,26 +81,17 @@ class $MODEL_NAME$APIController extends AppBaseController
         $$MODEL_NAME_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository->find($id);
 
         if (empty($$MODEL_NAME_CAMEL$)) {
-            return $this->sendError('$MODEL_NAME_HUMAN$ not found');
+            return $this->sendError('$MODEL_NAME_HUMAN$ não encontrado');
         }
-
+        
         $$MODEL_NAME_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository->update($input, $id);
 
-        return $this->sendResponse($$MODEL_NAME_CAMEL$->toArray(), '$MODEL_NAME$ updated successfully');
+        return $this->sendResponse($$MODEL_NAME_CAMEL$->toArray(), '$MODEL_NAME_HUMAN$ atualizado(a) com sucesso');
     }
 
     $DOC_DESTROY$
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        /** @var $MODEL_NAME$ $$MODEL_NAME_CAMEL$ */
-        $$MODEL_NAME_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository->find($id);
-
-        if (empty($$MODEL_NAME_CAMEL$)) {
-            return $this->sendError('$MODEL_NAME_HUMAN$ not found');
-        }
-
-        $$MODEL_NAME_CAMEL$->delete();
-
-        return $this->sendSuccess('$MODEL_NAME_HUMAN$ deleted successfully');
+        return $this->response($this->$MODEL_NAME_CAMEL$Repository->deleteOrUndelete($id));
     }
 }
