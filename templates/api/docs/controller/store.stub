@@ -1,5 +1,0 @@
-/**
-     * @param Create$MODEL_NAME$APIRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     * @responseFile status=401 storage/response/error/401.json
-     */

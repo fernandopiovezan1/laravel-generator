@@ -2,39 +2,28 @@
 
 namespace InfyOm\Generator\Generators\API;
 
-use InfyOm\Generator\Common\CommandData;
 use InfyOm\Generator\Generators\BaseGenerator;
 use InfyOm\Generator\Generators\ModelGenerator;
-use InfyOm\Generator\Utils\FileUtil;
 
 class APIRequestGenerator extends BaseGenerator
 {
-    /** @var CommandData */
-    private $commandData;
+    private string $createFileName;
 
-    /** @var string */
-    private $path;
+    private string $updateFileName;
 
-    /** @var string */
-    private $createFileName;
+    private array $rules;
 
-    /** @var string */
-    private $updateFileName;
+    private array $bodyParameters;
     
-    /** @var array */
-    private $rules;
+    private ModelGenerator $modelGenerator;
 
-    /** @var array */
-    private $bodyParameters;
-    /** @var ModelGenerator */
-    private $modelGenerator;
-    
-    public function __construct(CommandData $commandData)
+    public function __construct()
     {
-        $this->commandData = $commandData;
-        $this->path = $commandData->config->pathApiRequest;
-        $this->createFileName = 'Create'.$this->commandData->modelName.'APIRequest.php';
-        $this->updateFileName = 'Update'.$this->commandData->modelName.'APIRequest.php';
+        parent::__construct();
+
+        $this->path = $this->config->paths->apiRequest;
+        $this->createFileName = 'Create'.$this->config->modelNames->name.'APIRequest.php';
+        $this->updateFileName = 'Update'.$this->config->modelNames->name.'APIRequest.php';
         $this->modelGenerator = new ModelGenerator($this->commandData);
     }
 
@@ -52,33 +41,41 @@ class APIRequestGenerator extends BaseGenerator
         $this->generateUpdateRequest();
     }
 
-    private function generateCreateRequest()
+    protected function generateCreateRequest()
     {
-        
-        $templateData = get_template('api.request.create_request', 'laravel-generator');
+        ###### Alterada
+        $templateData = view('laravel-generator::api.request.create', $this->variables())->render();
 
-        $templateData = fill_template($this->commandData->dynamicVars, $templateData);
+        $this->config->commandComment(infy_nl().'Create Request created: ');
+        $this->config->commandInfo($this->createFileName);
+        
+        $templateData = view($this->commandData->dynamicVars, $templateData);
         if (config('infyom.laravel_generator.options.separate_rules', false)) {
             $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $this->modelGenerator->generateRules()), $templateData);
         }
         if (config('infyom.laravel_generator.options.body_parameter', false)) {
             $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $this->bodyParameters), $templateData);
         }
-        
-        FileUtil::createFile($this->path, $this->createFileName, $templateData);
+
+        g_filesystem()->createFile($this->path.$this->createFileName, $templateData);
 
         $this->commandData->commandComment("\nCreate Request created: ");
         $this->commandData->commandInfo($this->createFileName);
     }
 
-    private function generateUpdateRequest()
+    protected function generateUpdateRequest()
     {
-        $modelGenerator = new ModelGenerator($this->commandData);
+        
+        ###### Alterada
+        $modelGenerator = app(ModelGenerator::class);
         $rules = $modelGenerator->generateUniqueRules();
-        $this->commandData->addDynamicVariable('$UNIQUE_RULES$', $rules);
 
-        $templateData = get_template('api.request.update_request', 'laravel-generator');
+        $templateData = view('laravel-generator::api.request.update', [
+            'uniqueRules' => $rules,
+        ])->render();
 
+        g_filesystem()->createFile($this->path.$this->updateFileName, $templateData);
+        
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
         if (config('infyom.laravel_generator.options.separate_rules', false)) {
             $templateData = str_replace('$RULES$', implode(','.infy_nl_tab(1, 3), $this->modelGenerator->generateRules()), $templateData);
@@ -87,20 +84,18 @@ class APIRequestGenerator extends BaseGenerator
             $templateData = str_replace('$BODYPARAMETERS$', implode(','.infy_nl_tab(1,3), $this->bodyParameters), $templateData);
         }
 
-        FileUtil::createFile($this->path, $this->updateFileName, $templateData);
-
-        $this->commandData->commandComment("\nUpdate Request created: ");
-        $this->commandData->commandInfo($this->updateFileName);
+        $this->config->commandComment(infy_nl().'Update Request created: ');
+        $this->config->commandInfo($this->updateFileName);
     }
 
     public function rollback()
     {
         if ($this->rollbackFile($this->path, $this->createFileName)) {
-            $this->commandData->commandComment('Create API Request file deleted: '.$this->createFileName);
+            $this->config->commandComment('Create API Request file deleted: '.$this->createFileName);
         }
 
         if ($this->rollbackFile($this->path, $this->updateFileName)) {
-            $this->commandData->commandComment('Update API Request file deleted: '.$this->updateFileName);
+            $this->config->commandComment('Update API Request file deleted: '.$this->updateFileName);
         }
     }
     

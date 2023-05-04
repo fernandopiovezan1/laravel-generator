@@ -1,8 +1,0 @@
-/**
-     * @param int $id
-     * @param Update$MODEL_NAME$APIRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     * @urlParam id integer Identificador do registro.
-     * @responseFile status=401 storage/response/error/401.json
-     * @responseFile status=404 storage/response/error/404.json {"message": "$MODEL_NAME_HUMAN$ não encontrado"}
-     */

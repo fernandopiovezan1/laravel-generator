@@ -4,23 +4,15 @@ namespace InfyOm\Generator\Events;
 
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Class GeneratorFileDeleting.
- */
 class GeneratorFileDeleting
 {
     use SerializesModels;
 
-    public $type;
-    public $data;
+    public string $type;
 
-    /**
-     * Create a new event instance.
-     *
-     * @param string $type
-     * @param array  $data
-     */
-    public function __construct($type, $data)
+    public array $data;
+
+    public function __construct(string $type, array $data)
     {
         $this->type = $type;
         $this->data = $data;
