@@ -149,13 +149,16 @@ return [
         'swagger' => false, // generate swagger for your APIs
 
         'tests' => false, // generate test cases for your APIs
-        
+
         'excluded_fields' => [
             'id',
             'created_by',
             'updated_by',
             'deleted_by',
-            'company_id'
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'company_id',
         ], // Array of columns that doesn't required while creating module,
         
         'separate_rules' => true,
