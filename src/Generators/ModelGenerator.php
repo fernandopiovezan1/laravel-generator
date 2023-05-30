@@ -1,341 +1,91 @@
 <?php
 
-namespace InfyOm\Generator\Generators;
+namespace InfyOm\Generator\Generators\API;
 
-use Illuminate\Support\Str;
-use InfyOm\Generator\Utils\TableFieldsGenerator;
+use InfyOm\Generator\Generators\BaseGenerator;
+use InfyOm\Generator\Generators\ModelGenerator;
 
-class ModelGenerator extends BaseGenerator
+class APIRequestGenerator extends BaseGenerator
 {
-    /**
-     * Fields not included in the generator by default.
-     */
-    protected array $excluded_fields = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
+    private string $createFileName;
 
-    private string $fileName;
+    private string $updateFileName;
+
+    private array $rules;
+
+    private array $bodyParameters;
+
+    private ModelGenerator $modelGenerator;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->path = $this->config->paths->model;
-        $this->fileName = $this->config->modelNames->name.'.php';
+        $this->path = $this->config->paths->apiRequest;
+        $this->createFileName = 'Create' . $this->config->modelNames->name . 'APIRequest.php';
+        $this->updateFileName = 'Update' . $this->config->modelNames->name . 'APIRequest.php';
+        $this->modelGenerator = app(ModelGenerator::class);
     }
 
     public function generate()
     {
-        $templateData = view('laravel-generator::model.model', $this->variables())->render();
+        $this->generateCreateRequest();
+        $this->generateUpdateRequest();
+    }
 
-        g_filesystem()->createFile($this->path.$this->fileName, $templateData);
+    protected function generateCreateRequest()
+    {
+        $templateData = view('laravel-generator::api.request.create', $this->variables())->render();
 
-        $this->config->commandComment(infy_nl().'Model created: ');
-        $this->config->commandInfo($this->fileName);
+        g_filesystem()->createFile($this->path . $this->createFileName, $templateData);
+
+        $this->config->commandComment("\nCreate Request created: ");
+        $this->config->commandInfo($this->createFileName);
     }
 
     public function variables(): array
     {
         return [
-            'fillables'        => implode(','.infy_nl_tab(1, 2), $this->generateFillables()),
-            'casts'            => implode(','.infy_nl_tab(1, 2), $this->generateCasts()),
-            'rules'            => implode(','.infy_nl_tab(1, 2), $this->generateRules()),
-            'swaggerDocs'      => $this->fillDocs(),
-            'customPrimaryKey' => $this->customPrimaryKey(),
-            'customCreatedAt'  => $this->customCreatedAt(),
-            'customUpdatedAt'  => $this->customUpdatedAt(),
-            'customSoftDelete' => $this->customSoftDelete(),
-            'relations'        => $this->generateRelations(),
-            'timestamps'       => config('laravel_generator.timestamps.enabled', true),
+            'rules' => implode(',' . infy_nl_tab(1, 2), $this->modelGenerator->generateRules()),
+            'bodyParameters' => implode(',' . infy_nl_tab(1, 2), $this->generateBodyParameters()),
         ];
     }
 
-    protected function customPrimaryKey()
-    {
-        $primary = $this->config->getOption('primary');
-
-        if (!$primary) {
-            return null;
-        }
-
-        if ($primary === 'id') {
-            return null;
-        }
-
-        return $primary;
-    }
-
-    protected function customSoftDelete()
-    {
-        $deletedAt = config('laravel_generator.timestamps.deleted_at', 'deleted_at');
-
-        if ($deletedAt === 'deleted_at') {
-            return null;
-        }
-
-        return $deletedAt;
-    }
-
-    protected function customCreatedAt()
-    {
-        $createdAt = config('laravel_generator.timestamps.created_at', 'created_at');
-
-        if ($createdAt === 'created_at') {
-            return null;
-        }
-
-        return $createdAt;
-    }
-
-    protected function customUpdatedAt()
-    {
-        $updatedAt = config('laravel_generator.timestamps.updated_at', 'updated_at');
-
-        if ($updatedAt === 'updated_at') {
-            return null;
-        }
-
-        return $updatedAt;
-    }
-
-    protected function generateFillables(): array
-    {
-        $fillables = [];
-        if (isset($this->config->fields) && !empty($this->config->fields)) {
-            foreach ($this->config->fields as $field) {
-                if ($field->isFillable) {
-                    $fillables[] = "'".$field->name."'";
-                }
-            }
-        }
-
-        return $fillables;
-    }
-
-    protected function fillDocs(): string
-    {
-        if (!$this->config->options->swagger) {
-            return '';
-        }
-
-        return $this->generateSwagger();
-    }
-
-    public function generateSwagger(): string
-    {
-        $requiredFields = $this->generateRequiredFields();
-
-        $fieldTypes = SwaggerGenerator::generateTypes($this->config->fields);
-
-        $properties = [];
-        foreach ($fieldTypes as $fieldType) {
-            $properties[] = view(
-                'swagger-generator::model.property',
-                $fieldType
-            )->render();
-        }
-
-        $requiredFields = '{'.implode(',', $requiredFields).'}';
-
-        return view('swagger-generator::model.model', [
-            'requiredFields' => $requiredFields,
-            'properties'     => implode(','.infy_nl().' ', $properties),
-        ]);
-    }
-
-    protected function generateRequiredFields(): array
-    {
-        $requiredFields = [];
-
-        if (isset($this->config->fields) && !empty($this->config->fields)) {
-            foreach ($this->config->fields as $field) {
-                if (!empty($field->validations)) {
-                    if (Str::contains($field->validations, 'required')) {
-                        $requiredFields[] = '"'.$field->name.'"';
-                    }
-                }
-            }
-        }
-
-        return $requiredFields;
-    }
-
-    public function generateRules(): array
+    public function generateBodyParameters(): array
     {
         $dont_require_fields = config('laravel_generator.options.hidden_fields', [])
-                + config('laravel_generator.options.excluded_fields', $this->excluded_fields);
+            + config('laravel_generator.options.excluded_fields');
 
-        $rules = [];
-
-        foreach ($this->config->fields as $field) {
-            if (!$field->isPrimary && !in_array($field->name, $dont_require_fields)) {
-                if ($field->isNotNull && empty($field->validations)) {
-                    $field->validations = 'required';
-                }
-
-                /**
-                 * Generate some sane defaults based on the field type if we
-                 * are generating from a database table.
-                 */
-                if ($this->config->getOption('fromTable')) {
-                    $rule = empty($field->validations) ? [] : explode('|', $field->validations);
-
-                    if (!$field->isNotNull) {
-                        $rule[] = 'nullable';
-                    }
-
-                    switch ($field->dbType) {
-                        case 'integer':
-                            $rule[] = 'integer';
-                            break;
-                        case 'boolean':
-                            $rule[] = 'boolean';
-                            break;
-                        case 'float':
-                        case 'double':
-                        case 'decimal':
-                            $rule[] = 'numeric';
-                            break;
-                        case 'string':
-                        case 'text':
-                            $rule[] = 'string';
-
-                            // Enforce a maximum string length if possible.
-                            if ((int) $field->fieldDetails->getLength() > 0) {
-                                $rule[] = 'max:'.$field->fieldDetails->getLength();
-                            }
-                            break;
-                    }
-
-                    $fieldValidations = implode('|', $rule);
-                }
-            }
-
-            if (!empty($fieldValidations)) {
-                if (Str::contains($fieldValidations, 'unique:')) {
-                    $rule = explode('|', $fieldValidations);
-                    // move unique rule to last
-                    usort($rule, function ($record) {
-                        return (Str::contains($record, 'unique:')) ? 1 : 0;
-                    });
-                    $fieldValidations = implode('|', $rule);
-                }
-                $rule = "'".$field->name."' => '".$fieldValidations."'";
-                $rules[] = $rule;
-            }
-        }
-
-        return $rules;
-    }
-
-    public function generateUniqueRules(): string
-    {
-        $tableNameSingular = Str::singular($this->config->tableName);
-        $uniqueRules = '';
-        foreach ($this->generateRules() as $rule) {
-            if (Str::contains($rule, 'unique:')) {
-                $rule = explode('=>', $rule);
-                $string = '$rules['.trim($rule[0]).'].","';
-
-                $uniqueRules .= '$rules['.trim($rule[0]).'] = '.$string.'.$this->route("'.$tableNameSingular.'");';
-            }
-        }
-
-        return $uniqueRules;
-    }
-
-    public function generateCasts(): array
-    {
-        $casts = [];
-
-        $timestamps = TableFieldsGenerator::getTimestampFieldNames();
+        $bodyParameters = [];
 
         foreach ($this->config->fields as $field) {
-            if (in_array($field->name, $timestamps)) {
-                continue;
-            }
-
-            $rule = "'".$field->name."' => ";
-
-            switch (strtolower($field->dbType)) {
-                case 'integer':
-                case 'increments':
-                case 'smallinteger':
-                case 'long':
-                case 'biginteger':
-                    $rule .= "'integer'";
-                    break;
-                case 'double':
-                    $rule .= "'double'";
-                    break;
-                case 'decimal':
-                    $rule .= sprintf("'decimal:%d'", $field->numberDecimalPoints);
-                    break;
-                case 'float':
-                    $rule .= "'float'";
-                    break;
-                case 'boolean':
-                    $rule .= "'boolean'";
-                    break;
-                case 'datetime':
-                case 'datetimetz':
-                    $rule .= "'datetime'";
-                    break;
-                case 'date':
-                    $rule .= "'date'";
-                    break;
-                case 'enum':
-                case 'string':
-                case 'char':
-                case 'text':
-                    $rule .= "'string'";
-                    break;
-                default:
-                    $rule = '';
-                    break;
-            }
-
-            if (!empty($rule)) {
-                $casts[] = $rule;
+            if (!($field->isPrimary) && !in_array($field->name, $dont_require_fields)) {
+                $bodyParameter = "'" . $field->name . "' => ['description' => '" . $field->description . "']";
+                $bodyParameters[] = $bodyParameter;
             }
         }
 
-        return $casts;
+        return $bodyParameters;
     }
 
-    protected function generateRelations(): string
+    protected function generateUpdateRequest()
     {
-        $relations = [];
+        $templateData = view('laravel-generator::api.request.update', $this->variables())->render();
 
-        $count = 1;
-        $fieldsArr = [];
-        if (isset($this->config->relations) && !empty($this->config->relations)) {
-            foreach ($this->config->relations as $relation) {
-                $field = (isset($relation->inputs[0])) ? $relation->inputs[0] : null;
+        g_filesystem()->createFile($this->path . $this->updateFileName, $templateData);
 
-                $relationShipText = $field;
-                if (in_array($field, $fieldsArr)) {
-                    $relationShipText = $relationShipText.'_'.$count;
-                    $count++;
-                }
-
-                $relationText = $relation->getRelationFunctionText($relationShipText);
-                if (!empty($relationText)) {
-                    $fieldsArr[] = $field;
-                    $relations[] = $relationText;
-                }
-            }
-        }
-
-        return implode(infy_nl_tab(2), $relations);
+        $this->config->commandComment(infy_nl() . 'Update Request created: ');
+        $this->config->commandInfo($this->updateFileName);
     }
 
     public function rollback()
     {
-        if ($this->rollbackFile($this->path, $this->fileName)) {
-            $this->config->commandComment('Model file deleted: '.$this->fileName);
+        if ($this->rollbackFile($this->path, $this->createFileName)) {
+            $this->config->commandComment('Create API Request file deleted: ' . $this->createFileName);
+        }
+
+        if ($this->rollbackFile($this->path, $this->updateFileName)) {
+            $this->config->commandComment('Update API Request file deleted: ' . $this->updateFileName);
         }
     }
 }
