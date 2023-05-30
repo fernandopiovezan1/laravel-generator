@@ -26,6 +26,15 @@ class Create{{ $config->modelNames->name }}APIRequest extends APIRequest
      */
     public function rules()
     {
-        return {{ $config->modelNames->name }}::$rules;
+        return [
+            {!! $rules !!}
+        ];
+    }
+
+    public static function bodyParameters(): array
+    {
+        return [
+            {!! $bodyParameters !!}
+        ];
     }
 }

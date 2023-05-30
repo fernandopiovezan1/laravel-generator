@@ -5,19 +5,27 @@
 namespace {{ $config->namespaces->repository }};
 
 use {{ $config->namespaces->model }}\{{ $config->modelNames->name }};
-use {{ $config->namespaces->app }}\Repositories\BaseRepository;
 
 class {{ $config->modelNames->name }}Repository extends BaseRepository
 {
-    protected $fieldSearchable = [
+
+    protected array $fieldSearchable = [
         {!! $fieldSearchable !!}
     ];
 
+    /**
+    * Return searchable fields
+    *
+    * @return array
+    */
     public function getFieldsSearchable(): array
     {
         return $this->fieldSearchable;
     }
 
+    /**
+    * Configure the Model
+    */
     public function model(): string
     {
         return {{ $config->modelNames->name }}::class;
