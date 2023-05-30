@@ -110,22 +110,17 @@ class GeneratorPublishCommand extends PublishBaseCommand
 
         $this->info('AppBaseController created');
     }
-    
+
     private function publishBaseModel()
     {
-        $templateData = get_template('app_base_model', 'laravel-generator');
-
-        $templateData = $this->fillTemplate($templateData);
+        $templateData = view('laravel-generator::stubs.app_base_model', [
+            'namespaceApp' => $this->getLaravel()->getNamespace(),
+        ])->render();
 
         $modelPath = app_path('Models/');
-
         $fileName = 'BaseModel.php';
 
-        if (file_exists($modelPath.$fileName) && !$this->confirmOverwrite($fileName)) {
-            return;
-        }
-
-        g_filesystem()->createFile($modelPath, $fileName, $templateData);
+        g_filesystem()->createFile($modelPath.$fileName, $templateData);
 
         $this->info('AppBaseModel created');
     }
