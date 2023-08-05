@@ -21,7 +21,7 @@ class APIRequestGenerator extends BaseGenerator
     {
         parent::__construct();
 
-        $this->path = $this->config->paths->apiRequest;
+        $this->path = $this->config->paths->apiRequest . '/'. $this->config->modelNames->name;
         $this->createFileName = 'Create'.$this->config->modelNames->name.'APIRequest.php';
         $this->updateFileName = 'Update'.$this->config->modelNames->name.'APIRequest.php';
         $this->modelGenerator = app(ModelGenerator::class);
@@ -37,7 +37,7 @@ class APIRequestGenerator extends BaseGenerator
     {
         $templateData = view('laravel-generator::api.request.create', $this->variables())->render();
 
-        g_filesystem()->createFile($this->path.$this->createFileName, $templateData);
+        g_filesystem()->createFile($this->path . '/' . $this->createFileName, $templateData);
 
         $this->config->commandComment("\nCreate Request created: ");
         $this->config->commandInfo($this->createFileName);
@@ -45,15 +45,10 @@ class APIRequestGenerator extends BaseGenerator
 
     protected function generateUpdateRequest()
     {
-
-        ###### Alterada
-        $modelGenerator = app(ModelGenerator::class);
-        $rules = $modelGenerator->generateUniqueRules();
-
         $templateData = view('laravel-generator::api.request.update', $this->variables())->render();
 
-        g_filesystem()->createFile($this->path.$this->updateFileName, $templateData);
-
+        g_filesystem()->createFile($this->path . '/' . $this->updateFileName, $templateData);
+        
         $this->config->commandComment(infy_nl().'Update Request created: ');
         $this->config->commandInfo($this->updateFileName);
     }
@@ -77,7 +72,7 @@ class APIRequestGenerator extends BaseGenerator
         $bodyParameters = [];
 
         foreach ($this->config->fields as $field) {
-            if (!$field->isPrimary && !in_array($field->name, $dont_require_fields)) {
+            if (!($field->isPrimary) && !in_array($field->name, $dont_require_fields)) {
                 $bodyParameter = "'".$field->name."' => ['description' => '".$field->description."']";
                 $bodyParameters[] = $bodyParameter;
             }
