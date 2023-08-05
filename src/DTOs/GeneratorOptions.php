@@ -13,5 +13,6 @@ class GeneratorOptions
     public bool $seeder;
     public bool $swagger;
     public bool $tests;
+    public bool $servicePattern;
     public array $excludedFields;
 }

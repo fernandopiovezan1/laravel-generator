@@ -21,6 +21,8 @@ return [
 
         'repository'        => app_path('Repositories/'),
 
+        'service'           => app_path('Services'),
+
         'routes'            => base_path('routes/web.php'),
 
         'api_routes'        => base_path('routes/api.php'),
@@ -75,6 +77,8 @@ return [
 
         'repository'        => 'App\Repositories',
 
+        'services'          => 'App\Services',
+
         'controller'        => 'App\Http\Controllers',
 
         'api_controller'    => 'App\Http\Controllers\API',
@@ -92,6 +96,8 @@ return [
         'tests'             => 'Tests',
 
         'repository_test'   => 'Tests\Repositories',
+
+        'service_test'      => 'Tests\Services',
 
         'api_test'          => 'Tests\APIs',
     ],
@@ -132,23 +138,23 @@ return [
 
     'options' => [
 
-        'soft_delete' => false,
+        'soft_delete' => true,
 
         'save_schema_file' => true,
 
-        'localized' => false,
+        'localized' => true,
 
         'repository_pattern' => true,
 
         'resources' => false,
 
-        'factory' => false,
+        'factory' => true,
 
         'seeder' => false,
 
         'swagger' => false, // generate swagger for your APIs
 
-        'tests' => false, // generate test cases for your APIs
+        'tests' => true, // generate test cases for your APIs
 
         'excluded_fields' => [
             'id',
@@ -160,12 +166,14 @@ return [
             'deleted_at',
             'company_id',
         ], // Array of columns that doesn't required while creating module,
-        
+
         'separate_rules' => true,
-        
+
         'body_parameter' => true,
-        
-        'base_model' => true
+
+        'base_model' => false,
+
+        'service_pattern' => true
     ],
 
     /*

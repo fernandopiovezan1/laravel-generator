@@ -129,6 +129,8 @@ class GeneratorConfig
             app_path('Repositories/')
         ).$namespacePrefix;
 
+        $paths->service = config('laravel_generator.path.service', app_path('Services/')).$namespacePrefix;
+
         $paths->model = config('laravel_generator.path.model', app_path('Models/')).$namespacePrefix;
 
         $paths->dataTables = config(
@@ -201,6 +203,7 @@ class GeneratorConfig
         $namespaces->app = app()->getNamespace();
         $namespaces->app = substr($namespaces->app, 0, strlen($namespaces->app) - 1);
         $namespaces->repository = config('laravel_generator.namespace.repository', 'App\Repositories').$prefix;
+        $namespaces->services = config('laravel_generator.namespace.services', 'App\Services').$prefix;
         $namespaces->model = config('laravel_generator.namespace.model', 'App\Models').$prefix;
         $namespaces->seeder = config('laravel_generator.namespace.seeder', 'Database\Seeders').$prefix;
         $namespaces->factory = config('laravel_generator.namespace.factory', 'Database\Factories').$prefix;
@@ -238,6 +241,7 @@ class GeneratorConfig
 
         $namespaces->apiTests = config('laravel_generator.namespace.api_test', 'Tests\APIs');
         $namespaces->repositoryTests = config('laravel_generator.namespace.repository_test', 'Tests\Repositories');
+        $namespaces->serviceTests = config('laravel_generator.namespace.service_test', 'Tests\Services');
         $namespaces->tests = config('laravel_generator.namespace.tests', 'Tests');
 
         $this->namespaces = $namespaces;
@@ -276,6 +280,7 @@ class GeneratorConfig
         $options->swagger = config('laravel_generator.options.swagger', false);
         $options->tests = config('laravel_generator.options.tests', false);
         $options->excludedFields = config('laravel_generator.options.excluded_fields', ['id']);
+        $options->servicePattern = config('laravel_generator.options.service_pattern', false);
 
         $this->options = $options;
     }

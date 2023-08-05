@@ -28,6 +28,8 @@ use InfyOm\Generator\Generators\Scaffold\RequestGenerator;
 use InfyOm\Generator\Generators\Scaffold\RoutesGenerator;
 use InfyOm\Generator\Generators\Scaffold\ViewGenerator;
 use InfyOm\Generator\Generators\SeederGenerator;
+use InfyOm\Generator\Generators\ServiceGenerator;
+use InfyOm\Generator\Generators\ServiceTestGenerator;
 use InfyOm\Generator\Utils\GeneratorFieldsInputUtil;
 use InfyOm\Generator\Utils\TableFieldsGenerator;
 use Symfony\Component\Console\Input\InputArgument;
@@ -114,6 +116,16 @@ class BaseCommand extends Command
         if ($this->config->options->resources) {
             $apiResourceGenerator = app(APIResourceGenerator::class);
             $apiResourceGenerator->generate();
+        }
+
+        if ($this->config->options->servicePattern) {
+            $serviceGenerator = app(ServiceGenerator::class);
+            $serviceGenerator->generate();
+        }
+
+        if ($this->config->options->servicePattern && $this->config->options->tests) {
+            $serviceTestGenerator = app(ServiceTestGenerator::class);
+            $serviceTestGenerator->generate();
         }
     }
 

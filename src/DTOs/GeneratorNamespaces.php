@@ -6,6 +6,7 @@ class GeneratorNamespaces
 {
     public string $app;
     public string $repository;
+    public string $services;
     public string $model;
     public string $dataTables;
     public string $livewireTables;
