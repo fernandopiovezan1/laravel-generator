@@ -4,6 +4,7 @@
 
 namespace {{ $config->namespaces->apiTests }};
 
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use {{ $config->namespaces->tests }}\TestCase;
@@ -12,7 +13,7 @@ use {{ $config->namespaces->model }}\{{ $config->modelNames->name }};
 
 class {{ $config->modelNames->name }}ApiTest extends TestCase
 {
-    use ApiTestTrait, WithoutMiddleware, DatabaseTransactions;
+    use ApiTestTrait, WithoutMiddleware, DatabaseTransactions, DatabaseMigrations;
 
     /**
      * @test

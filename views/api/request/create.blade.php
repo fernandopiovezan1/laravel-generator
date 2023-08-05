@@ -2,9 +2,8 @@
     echo "<?php".PHP_EOL;
 @endphp
 
-namespace {{ $config->namespaces->apiRequest }};
+namespace {{ $config->namespaces->apiRequest }}\{{ $config->modelNames->name }};
 
-use {{ $config->namespaces->model }}\{{ $config->modelNames->name }};
 use InfyOm\Generator\Request\APIRequest;
 
 class Create{{ $config->modelNames->name }}APIRequest extends APIRequest

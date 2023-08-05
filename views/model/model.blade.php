@@ -5,8 +5,10 @@
 {{'namespace App\Models;'}}
 
 @if($config->options->softDelete){{'use App\Traits\CustomSoftDelete;' }}@nls(1)@endif
-@if($config->options->tests or $config->options->factory) {{ 'use Illuminate\Database\Eloquent\Factories\HasFactory;' }}@nls(1)@endif
+@if($config->options->tests or $config->options->factory){{'use Illuminate\Database\Eloquent\Factories\HasFactory;' }}@nls(1)@endif
 {{'use Rennokki\QueryCache\Traits\QueryCacheable;'}}
+{{'use Illuminate\Database\Eloquent\Casts\Attribute;'}}
+{{'use Vinkla\Hashids\Facades\Hashids;'}}
 
 @if(isset($swaggerDocs)){!! $swaggerDocs  !!}@endif
 class {{ $config->modelNames->name }} extends BaseModel
@@ -82,6 +84,16 @@ class {{ $config->modelNames->name }} extends BaseModel
         'deletedBy',
         'updatedBy',
     ];
+    
+    /**
+     * Set the hash to id value
+     */
+    protected function id(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value) => Hashids::connection('main')->encodeHex($value),
+        );
+    }
 
     /**
      * The validation rules.

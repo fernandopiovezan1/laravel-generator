@@ -4,10 +4,14 @@
 
 namespace {{ $config->namespaces->apiController }};
 
-use {{ $config->namespaces->apiRequest }}\Create{{ $config->modelNames->name }}APIRequest;
-use {{ $config->namespaces->apiRequest }}\Update{{ $config->modelNames->name }}APIRequest;
+use {{ $config->namespaces->apiRequest }}\{{ $config->modelNames->name }}\Create{{ $config->modelNames->name }}APIRequest;
+use {{ $config->namespaces->apiRequest }}\{{ $config->modelNames->name }}\Update{{ $config->modelNames->name }}APIRequest;
 use {{ $config->namespaces->model }}\{{ $config->modelNames->name }};
-use {{ $config->namespaces->repository }}\{{ $config->modelNames->name }}Repository;
+use {{ $config->namespaces->services }}\{{ $config->modelNames->name }}\Create{{ $config->modelNames->name }}Service;
+use {{ $config->namespaces->services }}\{{ $config->modelNames->name }}\Delete{{ $config->modelNames->name }}Service;
+use {{ $config->namespaces->services }}\{{ $config->modelNames->name }}\Retrieve{{ $config->modelNames->name }}Service;
+use {{ $config->namespaces->services }}\{{ $config->modelNames->name }}\Retrieves{{ $config->modelNames->plural }}Service;
+use {{ $config->namespaces->services }}\{{ $config->modelNames->name }}\Update{{ $config->modelNames->name }}Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use {{ $config->namespaces->app }}\Http\Controllers\AppBaseController;
@@ -15,32 +19,23 @@ use {{ $config->namespaces->app }}\Http\Controllers\AppBaseController;
 {!! $docController !!}
 class {{ $config->modelNames->name }}APIController extends AppBaseController
 {
-    private {{ $config->modelNames->name }}Repository ${{ $config->modelNames->camel }}Repository;
 
-    public function __construct({{ $config->modelNames->name }}Repository ${{ $config->modelNames->camel }}Repo)
-    {
-        $this->{{ $config->modelNames->camel }}Repository = ${{ $config->modelNames->camel }}Repo;
-    }
+    public function __construct(
+        private readonly Create{{ $config->modelNames->name }}Service $createService,
+        private readonly Delete{{ $config->modelNames->name }}Service $deleteService,
+        private readonly Retrieve{{ $config->modelNames->name }}Service $retrieveService,
+        private readonly Retrieves{{ $config->modelNames->plural }}Service $retrievesService,
+        private readonly Update{{ $config->modelNames->name }}Service $updateService,
+    )
+    {}
 
     {!! $docIndex !!}
     public function index(Request $request): JsonResponse
     {
-        if ($request->exists('search')) {
-            ${{ $config->modelNames->camelPlural }} = $this->{{ $config->modelNames->camel }}Repository
-                ->advancedSearch($request)
-                ->orderByRaw('deleted_at asc,' . ($request->get('order') ?? 'id') .
-                             ' ' . ($request->get('direction') ?? 'DESC'))
-                ->paginate($request->get('limit'));
-        } else {
-            ${{ $config->modelNames->camelPlural }} = $this->{{ $config->modelNames->camel }}Repository
-                ->findAllFieldsAnd($request)
-                ->orderByRaw('deleted_at asc,' . ($request->get('order') ?? 'id') .
-                             ' ' . ($request->get('direction') ?? 'DESC'))
-                ->paginate($request->get('limit'));
-        }
+        $data = $this->retrievesService->handle($request);
 
         return $this->sendResponse(
-            ${{ $config->modelNames->camelPlural }}->toArray(),
+            $data,
             __('messages.retrieved', ['model' => __('models/{{ $config->modelNames->camelPlural }}.plural')])
         );
     }
@@ -48,25 +43,23 @@ class {{ $config->modelNames->name }}APIController extends AppBaseController
     {!! $docStore !!}
     public function store(Create{{ $config->modelNames->name }}APIRequest $request): JsonResponse
     {
-        $input = $request->all();
+        $this->createService->setData($request->all());
 
-        ${{ $config->modelNames->camel }} = $this->{{ $config->modelNames->camel }}Repository->create($input);
+        ${{ $config->modelNames->camel }} = $this->createService->handle();
 
         return $this->sendResponse(
-            ${{ $config->modelNames->camel }}->toArray(),
+            ${{ $config->modelNames->camel }},
             __('messages.saved', ['model' => __('models/{{ $config->modelNames->camelPlural }}.singular')])
         );
     }
 
     {!! $docShow !!}
-    public function show($id): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        if (!is_numeric($id)) {
-            return $this->sendError('Parâmetro incorreto');
-        }
+        $this->retrieveService->setId($id);
 
         /** @var {{ $config->modelNames->name }} ${{ $config->modelNames->camel }} */
-        ${{ $config->modelNames->camel }} = $this->{{ $config->modelNames->camel }}Repository->find($id);
+        ${{ $config->modelNames->camel }} = $this->retrieveService->handle();
 
         if (empty(${{ $config->modelNames->camel }})) {
             return $this->sendError(
@@ -80,12 +73,10 @@ class {{ $config->modelNames->name }}APIController extends AppBaseController
     }
 
     {!! $docUpdate !!}
-    public function update($id, Update{{ $config->modelNames->name }}APIRequest $request): JsonResponse
+    public function update(string $id, Update{{ $config->modelNames->name }}APIRequest $request): JsonResponse
     {
-        $input = $request->all();
-
         /** @var {{ $config->modelNames->name }} ${{ $config->modelNames->camel }} */
-        ${{ $config->modelNames->camel }} = $this->{{ $config->modelNames->camel }}Repository->find($id);
+        ${{ $config->modelNames->camel }} = $this->updateService->validId($id);
 
         if (empty(${{ $config->modelNames->camel }})) {
             return $this->sendError(
@@ -93,7 +84,9 @@ class {{ $config->modelNames->name }}APIController extends AppBaseController
             );
         }
 
-        ${{ $config->modelNames->camel }} = $this->{{ $config->modelNames->camel }}Repository->update($input, $id);
+        $this->updateService->setId($id);
+        $this->updateService->setData($request->all());
+        ${{ $config->modelNames->camel }} = $this->updateService->handle();
 
         return $this->sendResponse(
             ${{ $config->modelNames->camel }},
@@ -102,8 +95,10 @@ class {{ $config->modelNames->name }}APIController extends AppBaseController
     }
 
     {!! $docDestroy !!}
-    public function destroy($id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
-        return $this->response($this->{{ $config->modelNames->camel }}Repository->deleteOrUndelete($id));
+        $this->deleteService->setId($id);
+
+        return $this->response($this->deleteService->handle());
     }
 }
