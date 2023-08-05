@@ -10,6 +10,7 @@ class FactoryGenerator extends BaseGenerator
     private string $fileName;
 
     private array $relations = [];
+    private array $removeFields = [];
 
     public function __construct()
     {
@@ -17,7 +18,11 @@ class FactoryGenerator extends BaseGenerator
 
         $this->path = $this->config->paths->factory;
         $this->fileName = $this->config->modelNames->name.'Factory.php';
-
+        $this->removeFields = config('laravel_generator.options.hidden_fields', [])
+            + config('laravel_generator.options.excluded_fields');
+        $clean = array_search('company_id', $this->removeFields);
+        unset($this->removeFields[$clean]);
+        
         //setup relations if available
         //assumes relation fields are tailed with _id if not supplied
         if (property_exists($this->config, 'relations')) {
@@ -79,13 +84,17 @@ class FactoryGenerator extends BaseGenerator
                 continue;
             }
 
+            if (in_array($field->name, $this->removeFields)) {
+                continue;
+            }
+            
             $fieldData = "'".$field->name."' => ".'$this->faker->';
             $rule = null;
             if (isset($rules[$field->name])) {
                 $rule = $rules[$field->name];
             }
 
-            switch (strtolower($field->dbType)) {
+            switch (explode(',', strtolower($field->dbType))[0]) {
                 case 'integer':
                 case 'unsignedinteger':
                 case 'smallinteger':
@@ -97,7 +106,7 @@ class FactoryGenerator extends BaseGenerator
                 case 'double':
                 case 'float':
                 case 'decimal':
-                    $fakerData = $this->getValidNumber($rule);
+                    $fakerData = $this->getValidNumber($rule, 999);
                     break;
                 case 'string':
                 case 'char':
@@ -245,20 +254,23 @@ class FactoryGenerator extends BaseGenerator
         $text = '';
         $uses = '';
         foreach ($this->relations as $field => $data) {
+            if (in_array($field, $this->removeFields)) {
+                continue;
+            }
             $relation = $data['relation'];
             $qualifier = $data['model_class'];
             $variable = Str::camel($relation);
             $model = Str::studly($relation);
             if (!empty($text)) {
-                $text = infy_nl_tab(1, 2);
+                $text .= infy_nl_tab(1, 2);
             }
-            $text .= '$'.$variable.' = '.$model.'::first();'.
+            $text .= !mb_strpos($text, $model) ? '$'.$variable.' = '.$model.'::first();'.
             infy_nl_tab(1, 2).
             'if (!$'.$variable.') {'.
             infy_nl_tab(1, 3).
             '$'.$variable.' = '.$model.'::factory()->create();'.
-            infy_nl_tab(1, 2).'}'.infy_nl();
-            $uses .= infy_nl()."use $qualifier;";
+            infy_nl_tab(1, 2).'}'.infy_nl() : null;
+            $uses .= !mb_strpos($uses, $qualifier ) ? infy_nl()."use $qualifier;" : null;
         }
 
         return [
