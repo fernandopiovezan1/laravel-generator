@@ -28,12 +28,12 @@ class Delete{{ $config->modelNames->name }}ServiceTest extends TestCase
      */
     public function test_delete_{{ $config->modelNames->snake }}_by_service()
     {
-        $data = {{ $config->modelNames->name }}::factory()->create();
+        $data = {{ $config->modelNames->name }}::factory()->create()->toArray();
 
-        $this->deleteService->setId($data->id);
+        $this->deleteService->setId($data['id']);
         $delete{{ $config->modelNames->name }} = $this->deleteService->handle();
 
         $this->assertTrue($delete{{ $config->modelNames->name }}['code'] === 200);
-        $this->assertNull({{ $config->modelNames->name }}::find($data->id), '{{ $config->modelNames->name }} should not exist in DB');
+        $this->assertNull({{ $config->modelNames->name }}::find($data['id']), '{{ $config->modelNames->name }} should not exist in DB');
     }
 }

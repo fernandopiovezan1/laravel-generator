@@ -36,7 +36,7 @@ class {{ $config->modelNames->name }}RepositoryTest extends TestCase
         $created{{ $config->modelNames->name }} = $created{{ $config->modelNames->name }}->toArray();
         $this->assertArrayHasKey('id', $created{{ $config->modelNames->name }});
         $this->assertNotNull(
-            Product::find(
+            {{ $config->modelNames->name }}::find(
                 (int)Hashids::connection('main')->decodeHex($created{{ $config->modelNames->name }}['id'])
                 ), '{{ $config->modelNames->human }} with given id must be in DB');
         $this->assertModelData(${{ $config->modelNames->camel }}, $created{{ $config->modelNames->name }});
@@ -47,12 +47,12 @@ class {{ $config->modelNames->name }}RepositoryTest extends TestCase
      */
     public function test_read_{{ $config->modelNames->snake }}()
     {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
+        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create()->toArray();
 
-        $db{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->find((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}->{{ $config->primaryName }}));
+        $db{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->find((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}['{{ $config->primaryName }}']));
 
         $db{{ $config->modelNames->name }} = $db{{ $config->modelNames->name }}->toArray();
-        $this->assertModelData(${{ $config->modelNames->camel }}->toArray(), $db{{ $config->modelNames->name }});
+        $this->assertModelData(${{ $config->modelNames->camel }}, $db{{ $config->modelNames->name }});
     }
 
     /**
@@ -60,13 +60,13 @@ class {{ $config->modelNames->name }}RepositoryTest extends TestCase
      */
     public function test_update_{{ $config->modelNames->snake }}()
     {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
+        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create()->toArray();
         $fake{{ $config->modelNames->name }} = {{ $config->modelNames->name }}::factory()->make()->toArray();
 
-        $updated{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->update($fake{{ $config->modelNames->name }}, (int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}->{{ $config->primaryName }}));
+        $updated{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->update($fake{{ $config->modelNames->name }}, (int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}['{{ $config->primaryName }}']));
 
         $this->assertModelData($fake{{ $config->modelNames->name }}, $updated{{ $config->modelNames->name }});
-        $db{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->find((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}->{{ $config->primaryName }}));
+        $db{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->find((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}['{{ $config->primaryName }}']));
         $this->assertModelData($fake{{ $config->modelNames->name }}, $db{{ $config->modelNames->name }}->toArray());
     }
 
@@ -75,11 +75,11 @@ class {{ $config->modelNames->name }}RepositoryTest extends TestCase
      */
     public function test_delete_{{ $config->modelNames->snake }}()
     {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
+        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create()->toArray();
 
-        $resp = $this->{{ $config->modelNames->camel }}Repo->delete((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}->{{ $config->primaryName }}));
+        $resp = $this->{{ $config->modelNames->camel }}Repo->delete((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}['{{ $config->primaryName }}']));
 
         $this->assertTrue($resp);
-        $this->assertNull({{ $config->modelNames->name }}::find((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}->{{ $config->primaryName }})), '{{ $config->modelNames->name }} should not exist in DB');
+        $this->assertNull({{ $config->modelNames->name }}::find((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}['{{ $config->primaryName }}'])), '{{ $config->modelNames->name }} should not exist in DB');
     }
 }

@@ -37,7 +37,7 @@ class Create{{ $config->modelNames->name }}ServiceTest extends TestCase
         $this->assertArrayHasKey('id', $created{{ $config->modelNames->name }});
         $this->assertNotNull($created{{ $config->modelNames->name }}['id'], 'Created {{ $config->modelNames->name }} must have id specified');
         $this->assertNotNull(
-            Product::find(
+            {{ $config->modelNames->name }}::find(
                 (int)Hashids::connection('main')->decodeHex($created{{ $config->modelNames->name }}['id'])
                 ), '{{ $config->modelNames->human }} with given id must be in DB');
         $this->assertModelData($data, $created{{ $config->modelNames->name }});

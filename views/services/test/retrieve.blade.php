@@ -28,12 +28,12 @@ class Retrieve{{ $config->modelNames->name }}ServiceTest extends TestCase
      */
     public function test_read_{{ $config->modelNames->snake }}_by_service()
     {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
+        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create()->toArray();
 
-        $this->retrieveService->setId(${{ $config->modelNames->camel }}->id);
+        $this->retrieveService->setId(${{ $config->modelNames->camel }}['id']);
         $db{{ $config->modelNames->name }} = $this->retrieveService->handle();
 
         $db{{ $config->modelNames->name }} = $db{{ $config->modelNames->name }}->toArray();
-        $this->assertModelData(${{ $config->modelNames->camel }}->toArray(), $db{{ $config->modelNames->name }});
+        $this->assertModelData(${{ $config->modelNames->camel }}, $db{{ $config->modelNames->name }});
     }
 }

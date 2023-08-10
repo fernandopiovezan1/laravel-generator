@@ -29,16 +29,16 @@ class Update{{ $config->modelNames->name }}ServiceTest extends TestCase
      */
     public function test_update_{{ $config->modelNames->snake }}_by_service()
     {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
+        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create()->toArray();
         $fake{{ $config->modelNames->name }} = {{ $config->modelNames->name }}::factory()->make()->toArray();
 
-        $this->updateService->validId(${{ $config->modelNames->camel }}->id);
-        $this->updateService->setId(${{ $config->modelNames->camel }}->id);
+        $this->updateService->validId(${{ $config->modelNames->camel }}['id']);
+        $this->updateService->setId(${{ $config->modelNames->camel }}['id']);
         $this->updateService->setData($fake{{ $config->modelNames->name }});
         $updated{{ $config->modelNames->name }} = $this->updateService->handle();
 
         $this->assertModelData($fake{{ $config->modelNames->name }}, $updated{{ $config->modelNames->name }});
-        $db{{ $config->modelNames->name }} = {{ $config->modelNames->name }}::find((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}->id));
+        $db{{ $config->modelNames->name }} = {{ $config->modelNames->name }}::find((int)Hashids::connection('main')->decodeHex(${{ $config->modelNames->camel }}['id']));
         $this->assertModelData($fake{{ $config->modelNames->name }}, $db{{ $config->modelNames->name }}->toArray());
     }
 }

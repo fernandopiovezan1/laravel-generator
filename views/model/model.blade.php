@@ -84,16 +84,6 @@ class {{ $config->modelNames->name }} extends BaseModel
         'deletedBy',
         'updatedBy',
     ];
-    
-    /**
-     * Set the hash to id value
-     */
-    protected function id(): Attribute
-    {
-        return Attribute::make(
-            get: fn (string $value) => Hashids::connection('main')->encodeHex($value),
-        );
-    }
 
     /**
      * The validation rules.
