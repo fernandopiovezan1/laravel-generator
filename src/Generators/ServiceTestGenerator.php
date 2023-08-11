@@ -21,7 +21,7 @@ class ServiceTestGenerator extends BaseGenerator
         $this->retrieveFileName = 'Retrieve' . $this->config->modelNames->name . 'ServiceTest.php';
         $this->retrievesFileName = 'Retrieves' . $this->config->modelNames->plural . 'ServiceTest.php';
     }
-    
+
     public function generate()
     {
         $this->generateCreateService();
@@ -83,8 +83,34 @@ class ServiceTestGenerator extends BaseGenerator
 
     public function rollback()
     {
-        if ($this->rollbackFile($this->path, $this->fileName)) {
-            $this->config->commandComment('Repository file deleted: '.$this->fileName);
+        if ($this->rollbackFile($this->path . '/', $this->createFileName)) {
+            $this->config->commandComment('Create API Service Test file deleted: '.$this->createFileName);
         }
+
+        if ($this->rollbackFile($this->path . '/', $this->createFileName)) {
+            $this->config->commandComment('Create API Service Test file deleted: '.$this->createFileName);
+        }
+
+        if ($this->rollbackFile($this->path . '/', $this->updateFileName)) {
+            $this->config->commandComment('Update API Service Test file deleted: '.$this->updateFileName);
+        }
+
+        if ($this->rollbackFile($this->path . '/', $this->deleteFileName)) {
+            $this->config->commandComment('Delete API Service Test file deleted: '.$this->deleteFileName);
+        }
+
+        if ($this->rollbackFile($this->path . '/', $this->retrieveFileName)) {
+            $this->config->commandComment('Retrieve API Service Test file deleted: '.$this->retrieveFileName);
+        }
+
+        if ($this->rollbackFile($this->path . '/', $this->retrievesFileName)) {
+            $this->config->commandComment('Retrieves API Service Test file deleted: '.$this->retrievesFileName);
+        }
+
+        if (!empty($this->path) && is_dir($this->path)) {
+            rmdir($this->path);
+            $this->config->commandComment('Services Test dir deleted.');
+        }
+
     }
 }

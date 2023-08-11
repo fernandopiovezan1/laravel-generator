@@ -18,6 +18,8 @@ use InfyOm\Generator\Generators\Scaffold\RequestGenerator;
 use InfyOm\Generator\Generators\Scaffold\RoutesGenerator;
 use InfyOm\Generator\Generators\Scaffold\ViewGenerator;
 use InfyOm\Generator\Generators\SeederGenerator;
+use InfyOm\Generator\Generators\ServiceGenerator;
+use InfyOm\Generator\Generators\ServiceTestGenerator;
 use Symfony\Component\Console\Input\InputArgument;
 
 class RollbackGeneratorCommand extends BaseCommand
@@ -110,6 +112,16 @@ class RollbackGeneratorCommand extends BaseCommand
         if ($this->config->options->seeder) {
             $seederGenerator = app(SeederGenerator::class);
             $seederGenerator->rollback();
+        }
+
+        if ($this->config->options->servicePattern) {
+            $serviceGenerator = app(ServiceGenerator::class);
+            $serviceGenerator->rollback();
+        }
+
+        if ($this->config->options->servicePattern && $this->config->options->tests) {
+            $serviceTestGenerator = app(ServiceTestGenerator::class);
+            $serviceTestGenerator->rollback();
         }
 
         $this->info('Generating autoload files');
