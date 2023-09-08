@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use {{ $config->namespaces->app }}\Http\Controllers\AppBaseController;
 
 {!! $docController !!}
-class {{ $config->modelNames->name }}APIController extends AppBaseController
+class {{ $config->modelNames->name }}Controller extends AppBaseController
 {
     {!! $docIndex !!}
     public function index(Request $request): JsonResponse
