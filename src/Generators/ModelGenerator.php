@@ -39,9 +39,9 @@ class ModelGenerator extends BaseGenerator
     public function variables(): array
     {
         return [
-            'fillables'        => implode(','.infy_nl_tab(1, 2), $this->generateFillables()),
-            'casts'            => implode(','.infy_nl_tab(1, 2), $this->generateCasts()),
-            'rules'            => implode(','.infy_nl_tab(1, 2), $this->generateRules()),
+            'fillables'        => implode(','.infy_nl_tab(1, 2), $this->generateFillables()) . ',',
+            'casts'            => implode(','.infy_nl_tab(1, 2), $this->generateCasts()) . ',',
+            'rules'            => implode(','.infy_nl_tab(1, 2), $this->generateRules()) . ',',
             'swaggerDocs'      => $this->fillDocs(),
             'customPrimaryKey' => $this->customPrimaryKey(),
             'customCreatedAt'  => $this->customCreatedAt(),

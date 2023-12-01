@@ -40,13 +40,10 @@ class RepositoryGenerator extends BaseGenerator
                 $searchables[] = "'".$field->name."'";
             }
         }
-            ###### Alterado
-//        $templateData = str_replace('$FULLTEXT$', implode(','.infy_nl_tab(1, 2), $this->generateFullTextFields()), $templateData);
-//        $docsTemplate = str_replace('$GENERATE_DATE$', date('F j, Y, g:i a'), $docsTemplate);
 
-        return implode(','.infy_nl_tab(1, 2), $searchables);
+        return implode(','.infy_nl_tab(1, 2), $searchables) . ',';
     }
-    
+
     public function generateFullTextFields()
     {
         $fullText = [];

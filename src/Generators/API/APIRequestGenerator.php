@@ -89,8 +89,8 @@ class APIRequestGenerator extends BaseGenerator
     public function variables(): array
     {
         return [
-            'rules'            => implode(','.infy_nl_tab(1, 2), $this->modelGenerator->generateRules()),
-            'bodyParameters'  => implode(','.infy_nl_tab(1, 2), $this->generateBodyParameters()),
+            'rules'            => implode(','.infy_nl_tab(1, 2), $this->modelGenerator->generateRules()) . ',',
+            'bodyParameters'  => implode(','.infy_nl_tab(1, 2), $this->generateBodyParameters()) . ',',
         ];
     }
 }
