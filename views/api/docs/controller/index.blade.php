@@ -11,10 +11,12 @@
      *  os campos da tabela e das relações, portanto pode ser uma busca lenta em sua execução No-example
      * @queryParam created_by[] string[] Pesquise pela coluna da tabela relacionada. Exemplo tabela[coluna]. No-example
      * @queryParam updated_by[?] string[] Pesquise pela coluna da tabela relacionada. Exemplo tabela[coluna]. No-example
-     * @queryParam start_created_at string Busca por data inicial de criação. Se enviado sozinho faz busca exata. Exemplo 2021-01-30 No-example
+     * @queryParam start_created_at string Busca por data inicial de criação. Se enviado sozinho faz busca exata.
+     * Exemplo 2021-01-30 No-example
      * @queryParam end_created_at string Busca por data final de criação, quando combinada com o start_created_at
      *  é efetuada uma busca com Between. Exemplo 2021-01-30 No-example
-     * @queryParam start_updated_at string Busca por data inicial de criação. Se enviado sozinho faz busca exata. Exemplo 2021-01-30 No-example
+     * @queryParam start_updated_at string Busca por data inicial de criação. Se enviado sozinho faz busca exata.
+     * Exemplo 2021-01-30 No-example
      * @queryParam end_updated_at string Busca por data final de criação, quando combinada com o start_created_at
      *  é efetuada uma busca com Between. Exemplo 2021-01-30 No-example
      * @queryParam hide_relation string Informe o nome da relação que deverá ser ocultada na consulta. No-Example

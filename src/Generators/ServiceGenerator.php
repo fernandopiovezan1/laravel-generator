@@ -32,7 +32,7 @@ class ServiceGenerator extends BaseGenerator
     public function rollback()
     {
         if ($this->rollbackFile($this->path . '/', $this->serviceFileName)) {
-            $this->config->commandComment('Service file deleted: '.$this->createFileName);
+            $this->config->commandComment('Service file deleted: '.$this->serviceFileName);
         }
     }
 }

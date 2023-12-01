@@ -1,7 +1,7 @@
 /**
-    * Remove the specified {{ $config->modelNames->name }} from storage.
-    * DELETE /{{ $config->modelNames->dashedPlural }}/{id}
-    * @throws \Exception
-    * @responseFile status=401 storage/response/error/401.json
-    * @responseFile status=404 storage/response/error/404.json {"message": "{{ $config->modelNames->human }} not found"}
-    */
+     * Remove the specified {{ $config->modelNames->name }} from storage.
+     * DELETE /{{ $config->modelNames->dashedPlural }}/{id}
+     * @throws \Exception
+     * @responseFile status=401 storage/response/error/401.json
+     * @responseFile status=404 storage/response/error/404.json {"message": "{{ $config->modelNames->human }} not found"}
+     */
