@@ -9,31 +9,30 @@ use InfyOm\Generator\Request\APIRequest;
 class Update{{ $config->modelNames->name }}APIRequest extends APIRequest
 {
     /**
-    * Determine if the user is authorized to make this request.
-    *
-    * @return bool
-    */
-    public function authorize()
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
     {
         return true;
     }
 
     /**
-    * Get the validation rules that apply to the request.
-    *
-    * @return array
-    */
-    public function rules()
-    {
-        return [
-            {!! $rules !!}
-        ];
-    }
-    
+     * Get the validation rules that apply to the request.
+     */
     public static function bodyParameters(): array
     {
         return [
             {!! $bodyParameters !!}
+        ];
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     */
+    public function rules(): array
+    {
+        return [
+            {!! $rules !!}
         ];
     }
 }
