@@ -19,7 +19,7 @@ class Create{{ $config->modelNames->name }}APIRequest extends APIRequest
     /**
      * Get the validation rules that apply to the request.
      */
-    public function rules(): bool
+    public function rules(): array
     {
         return [
             {!! $rules !!}
