@@ -7,6 +7,18 @@ namespace {{ $namespacesTests }};
 trait ApiTestTrait
 {
     private $response;
+
+    private array $scapeValue = [
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
+        'is_active',
+        'deleted_by',
+        'created_by',
+        'updated_by'
+    ];
+
     public function assertApiResponse(Array $actualData)
     {
         $this->assertApiSuccess();
@@ -27,7 +39,7 @@ trait ApiTestTrait
     public function assertModelData(Array $actualData, Array $expectedData)
     {
         foreach ($actualData as $key => $value) {
-            if (in_array($key, {!! $timestamps !!})) {
+            if (in_array($key, $this->scapeValue)) {
                 continue;
             }
             $this->assertEquals($actualData[$key], $expectedData[$key]);
