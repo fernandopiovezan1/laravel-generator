@@ -170,6 +170,7 @@ class ModelGenerator extends BaseGenerator
         $rules = [];
 
         foreach ($this->config->fields as $field) {
+            $field->validations = '';
             if (!$field->isPrimary && !in_array($field->name, $dont_require_fields)) {
                 if ($field->isNotNull && empty($field->validations)) {
                     $field->validations = 'required';

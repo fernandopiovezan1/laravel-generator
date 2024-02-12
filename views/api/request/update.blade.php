@@ -17,8 +17,9 @@ class Update{{ $config->modelNames->name }}APIRequest extends APIRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     */
+    * Provides a detailed description of the expected parameters
+    * in the body of an HTTP request.
+    */
     public static function bodyParameters(): array
     {
         return [

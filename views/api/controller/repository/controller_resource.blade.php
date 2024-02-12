@@ -14,7 +14,7 @@ use {{ $config->namespaces->app }}\Http\Controllers\AppBaseController;
 use {{ $config->namespaces->apiResource }}\{{ $config->modelNames->name }}Resource;
 
 {!! $docController !!}
-class {{ $config->modelNames->name }}Controller extends AppBaseController
+class {{ $config->modelNames->name }}APIController extends AppBaseController
 {
     /** @var  {{ $config->modelNames->name }}Repository */
     private ${{ $config->modelNames->camel }}Repository;

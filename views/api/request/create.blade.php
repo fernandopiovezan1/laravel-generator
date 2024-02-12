@@ -17,19 +17,23 @@ class Create{{ $config->modelNames->name }}APIRequest extends APIRequest
     }
 
     /**
+     * Provides a detailed description of the expected parameters
+     * in the body of an HTTP request.
+     */
+    public static function bodyParameters(): array
+    {
+        return [
+            {!! $bodyParameters !!}
+        ];
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
     {
         return [
             {!! $rules !!}
-        ];
-    }
-
-    public static function bodyParameters(): array
-    {
-        return [
-            {!! $bodyParameters !!}
         ];
     }
 }
