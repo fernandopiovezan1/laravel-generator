@@ -22,14 +22,22 @@ class {{ $config->modelNames->name }} extends BaseModel
         {!! $rules !!}
     ];
 
+    /**
+     * Invalidate the cache automatically
+     * upon update in the database.
+     */
+    protected static bool $flushCacheOnUpdate = true;
+
+    /**
+     * Provides a detailed description of the expected parameters
+     * in the body of an HTTP request.
+     */
+    protected array $fieldDescriptions = [
+        {!! $fieldDescriptions !!}
+    ];
+
     public $table = '{{ $config->tableName }}';
 
-@if($customPrimaryKey)@tab()protected $primaryKey = '{{ $customPrimaryKey }}';@nls(2)@endif
-@if($config->connection)@tab()protected $connection = '{{ $config->connection }}';@nls(2)@endif
-@if(!$timestamps)@tab()public $timestamps = false;@nls(2)@endif
-@if($customSoftDelete)@tab()protected $dates = ['{{ $customSoftDelete }}'];@nls(2)@endif
-@if($customCreatedAt)@tab()const CREATED_AT = '{{ $customCreatedAt }}';@nls(2)@endif
-@if($customUpdatedAt)@tab()const UPDATED_AT = '{{ $customUpdatedAt }}';@nls(2)@endif
     /**
      * Time in seconds to live Cache
      */
@@ -43,12 +51,12 @@ class {{ $config->modelNames->name }} extends BaseModel
         {!! $fillables !!}
     ];
 
-    /**
-     * Invalidate the cache automatically
-     * upon update in the database.
-     */
-    protected static bool $flushCacheOnUpdate = true;
-
+@if($customPrimaryKey)@tab()protected $primaryKey = '{{ $customPrimaryKey }}';@nls(2)@endif
+@if($config->connection)@tab()protected $connection = '{{ $config->connection }}';@nls(2)@endif
+@if(!$timestamps)@tab()public $timestamps = false;@nls(2)@endif
+@if($customSoftDelete)@tab()protected $dates = ['{{ $customSoftDelete }}'];@nls(2)@endif
+@if($customCreatedAt)@tab()const CREATED_AT = '{{ $customCreatedAt }}';@nls(2)@endif
+@if($customUpdatedAt)@tab()const UPDATED_AT = '{{ $customUpdatedAt }}';@nls(2)@endif
     /**
      * The attributes that should be casted to native types.
      * @var array

@@ -4,27 +4,28 @@
 
 namespace {{ $config->namespaces->apiRequest }}\{{ $config->modelNames->name }};
 
-use InfyOm\Generator\Request\APIRequest;
+use {{ $config->namespaces->model }}\{{ $config->modelNames->name }};
+use App\Http\Requests\API\BaseAPIRequest;
 
-class Create{{ $config->modelNames->name }}APIRequest extends APIRequest
+class Create{{ $config->modelNames->name }}APIRequest extends BaseAPIRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
+        if (!$this->user()?->company_id) {
+            return false;
+        }
         return true;
     }
 
     /**
-     * Provides a detailed description of the expected parameters
-     * in the body of an HTTP request.
+     * Configure the Model
      */
-    public static function bodyParameters(): array
+    public function model(): string
     {
-        return [
-            {!! $bodyParameters !!}
-        ];
+        return {{ $config->modelNames->name }}::class;
     }
 
     /**
@@ -32,8 +33,6 @@ class Create{{ $config->modelNames->name }}APIRequest extends APIRequest
      */
     public function rules(): array
     {
-        return [
-            {!! $rules !!}
-        ];
+        return {{ $config->modelNames->name }}::$rules;
     }
 }

@@ -49,6 +49,7 @@ class ModelGenerator extends BaseGenerator
             'customSoftDelete' => $this->customSoftDelete(),
             'relations'        => $this->generateRelations(),
             'timestamps'       => config('laravel_generator.timestamps.enabled', true),
+            'fieldDescriptions'  => implode(','.infy_nl_tab(1, 2), $this->generateFieldDescription()) . ',',
         ];
     }
 
@@ -332,6 +333,24 @@ class ModelGenerator extends BaseGenerator
 
         return implode(infy_nl_tab(2), $relations);
     }
+
+    public function generateFieldDescription(): array
+    {
+        $dont_require_fields = config('laravel_generator.options.hidden_fields', [])
+            + config('laravel_generator.options.excluded_fields');
+
+        $fieldDescriptions = [];
+
+        foreach ($this->config->fields as $field) {
+            if (!($field->isPrimary) && !in_array($field->name, $dont_require_fields)) {
+                $fieldDescription = "'".$field->name."' => ['description' => '".$field->description."']";
+                $fieldDescriptions[] = $fieldDescription;
+            }
+        }
+
+        return $fieldDescriptions;
+    }
+
 
     public function rollback()
     {

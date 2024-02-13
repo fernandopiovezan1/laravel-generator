@@ -11,12 +11,6 @@ class APIRequestGenerator extends BaseGenerator
 
     private string $updateFileName;
 
-    private array $rules;
-
-    private array $bodyParameters;
-
-    private ModelGenerator $modelGenerator;
-
     public function __construct()
     {
         parent::__construct();
@@ -24,7 +18,6 @@ class APIRequestGenerator extends BaseGenerator
         $this->path = $this->config->paths->apiRequest . $this->config->modelNames->name;
         $this->createFileName = 'Create'.$this->config->modelNames->name.'APIRequest.php';
         $this->updateFileName = 'Update'.$this->config->modelNames->name.'APIRequest.php';
-        $this->modelGenerator = app(ModelGenerator::class);
     }
 
     public function generate()
@@ -39,13 +32,18 @@ class APIRequestGenerator extends BaseGenerator
 
         g_filesystem()->createFile($this->path . '/' . $this->createFileName, $templateData);
 
-        $this->config->commandComment("\nCreate Request created: ");
+        $this->config->commandComment(infy_nl().'Create Request created: ');
         $this->config->commandInfo($this->createFileName);
     }
 
     protected function generateUpdateRequest()
     {
-        $templateData = view('laravel-generator::api.request.update', $this->variables())->render();
+        $modelGenerator = app(ModelGenerator::class);
+        $rules = $modelGenerator->generateUniqueRules();
+
+        $templateData = view('laravel-generator::api.request.update', [
+            'uniqueRules' => $rules,
+        ])->render();
 
         g_filesystem()->createFile($this->path . '/' . $this->updateFileName, $templateData);
 
@@ -67,30 +65,5 @@ class APIRequestGenerator extends BaseGenerator
             rmdir($this->path);
             $this->config->commandComment('API Request dir deleted: ');
         }
-    }
-
-    public function generateBodyParameters(): array
-    {
-        $dont_require_fields = config('laravel_generator.options.hidden_fields', [])
-            + config('laravel_generator.options.excluded_fields');
-
-        $bodyParameters = [];
-
-        foreach ($this->config->fields as $field) {
-            if (!($field->isPrimary) && !in_array($field->name, $dont_require_fields)) {
-                $bodyParameter = "'".$field->name."' => ['description' => '".$field->description."']";
-                $bodyParameters[] = $bodyParameter;
-            }
-        }
-
-        return $bodyParameters;
-    }
-
-    public function variables(): array
-    {
-        return [
-            'rules'            => implode(','.infy_nl_tab(1, 2), $this->modelGenerator->generateRules()) . ',',
-            'bodyParameters'  => implode(','.infy_nl_tab(1, 2), $this->generateBodyParameters()) . ',',
-        ];
     }
 }
