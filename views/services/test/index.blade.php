@@ -2,105 +2,63 @@
     echo "<?php".PHP_EOL;
 @endphp
 
-namespace {{ $config->namespaces->serviceTests }};
-
 use {{ $config->namespaces->model }}\{{ $config->modelNames->name }};
 use {{ $config->namespaces->services }}\{{ $config->modelNames->name }}Service;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use {{ $config->namespaces->repository }}\{{ $config->modelNames->name }}Repository;
 use Illuminate\Http\Request;
-use {{ $config->namespaces->tests }}\ApiTestTrait;
-use {{ $config->namespaces->tests }}\TestCase;
 
-class {{ $config->modelNames->name }}ServiceTest extends TestCase
-{
-    use ApiTestTrait;
-    use DatabaseTransactions;
-    use DatabaseMigrations;
+uses(\Tests\ApiTestTrait::class);
+uses(\Illuminate\Foundation\Testing\DatabaseTransactions::class);
+uses(\Illuminate\Foundation\Testing\DatabaseMigrations::class);
 
-    protected {{ $config->modelNames->name }}Service ${{$config->modelNames->camel}}Service;
+beforeEach(function () {
+    $this->{{ $config->modelNames->camel }}Service = app({{ $config->modelNames->name }}Service::class);
+    $this->{{ $config->modelNames->camel }}Repository = app({{ $config->modelNames->name }}Repository::class);
+});
 
-    public function setUp() : void
-    {
-        parent::setUp();
-        $this->{{$config->modelNames->name}}Service = app({{ $config->modelNames->name }}Service::class);
-    }
+test('create {{ $config->modelNames->human }} by service', function () {
+    $data = new Request({{ $config->modelNames->name }}::factory()->make()->toArray());
 
-    /**
-     * @test create
-     */
-    public function test_create_{{ $config->modelNames->snake }}_by_service()
-    {
-        $data = new Request({{ $config->modelNames->name }}::factory()->make()->toArray());
+    $this->{{$config->modelNames->camel}}Service->setRequest($data);
+    $created{{ $config->modelNames->name }} = $this->{{$config->modelNames->camel}}Service->create();
 
-        $this->{{$config->modelNames->name}}Service->setRequest($data);
-        $created{{ $config->modelNames->name }} = $this->{{$config->modelNames->name}}Service->create();
+    expect($created{{ $config->modelNames->name }})->toHaveKey('id')
+        ->and($created{{ $config->modelNames->name }}['id'])->not->toBeNull('Created {{ $config->modelNames->human }} must have id specified')
+        ->and($this
+            ->{{$config->modelNames->camel}}Repository
+            ->find($created{{ $config->modelNames->name }}['id']))
+            ->not
+            ->toBeNull('Classification with given id must be in DB');
+    $this->assertModelData($data->all(), $created{{ $config->modelNames->name }});
+});
 
-        $this->assertArrayHasKey('id', $created{{ $config->modelNames->name }});
-        $this->assertNotNull($created{{ $config->modelNames->name }}['id'], 'Created {{ $config->modelNames->name }} must have id specified');
-        $this->assertNotNull(
-            {{ $config->modelNames->name }}::find(
-                $created{{ $config->modelNames->name }}['id']), '{{ $config->modelNames->human }} with given id must be in DB');
-        $this->assertModelData($data->all(), $created{{ $config->modelNames->name }});
-    }
+test('delete {{ $config->modelNames->human }} by service', function () {
+    $data = {{ $config->modelNames->name }}::factory()->create();
 
-    /**
-     * @test delete
-     */
-    public function test_delete_{{ $config->modelNames->snake }}_by_service()
-    {
-        $data = {{ $config->modelNames->name }}::factory()->create()->toArray();
+    $delete{{ $config->modelNames->name }} = $this->{{$config->modelNames->camel}}Service->delete($data);
 
-        $this->{{$config->modelNames->name}}Service->setId($data['id']);
-        $delete{{ $config->modelNames->name }} = $this->{{$config->modelNames->name}}Service->delete();
+    expect($delete{{ $config->modelNames->name }}['code'] === 200)->toBeTrue()
+        ->and($this->{{$config->modelNames->camel}}Repository->find($data['id']))->toBeNull('Classification should not exist in DB');
+});
 
-        $this->assertTrue($delete{{ $config->modelNames->name }}['code'] === 200);
-        $this->assertNull({{ $config->modelNames->name }}::find($data['id']), '{{ $config->modelNames->name }} should not exist in DB');
-    }
+test('read all {{ $config->modelNames->human }} by service', function () {
+    $data = {{ $config->modelNames->name }}::factory()->create();
 
-    /**
-     * @test read all
-     */
-    public function test_read_all_{{ $config->modelNames->snake }}_by_service()
-    {
-        $data = {{ $config->modelNames->name }}::factory()->create();
+    $req = new Request(['limit' => 1, 'direction' => 'desc']);
+    $db{{ $config->modelNames->name }} = $this->{{$config->modelNames->camel}}Service->search($req);
 
-        $req = new Request(['limit' => 1, 'direction' => 'desc']);
-        $db{{ $config->modelNames->name }} = $this->{{$config->modelNames->name}}Service->search($req);
+    expect($db{{ $config->modelNames->name }})->toHaveKey('data');
+    $this->assertModelData($db{{ $config->modelNames->name }}['data'][0], $data->toArray());
+});
 
-        $this->assertArrayHasKey('data', $db{{ $config->modelNames->name }});
-        $this->assertModelData($db{{ $config->modelNames->name }}['data'][0], $data->toArray());
-    }
+test('update {{ $config->modelNames->human }} by service', function () {
+    ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
+    $fake{{ $config->modelNames->name }} = new Request({{ $config->modelNames->name }}::factory()->make()->toArray());
 
-    /**
-     * @test read
-     */
-    public function test_read_{{ $config->modelNames->snake }}_by_service()
-    {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create()->toArray();
+    $this->{{$config->modelNames->camel}}Service->setRequest($fake{{ $config->modelNames->name }});
+    $updated{{ $config->modelNames->name }} = $this->{{$config->modelNames->camel}}Service->update(${{ $config->modelNames->camel }});
 
-        $this->{{$config->modelNames->name}}Service->setId(${{ $config->modelNames->camel }}['id']);
-        $db{{ $config->modelNames->name }} = $this->{{$config->modelNames->name}}Service->find();
-
-        $db{{ $config->modelNames->name }} = $db{{ $config->modelNames->name }}->toArray();
-        $this->assertModelData(${{ $config->modelNames->camel }}, $db{{ $config->modelNames->name }});
-    }
-
-    /**
-     * @test update
-     */
-    public function test_update_{{ $config->modelNames->snake }}_by_service()
-    {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create()->toArray();
-        $fake{{ $config->modelNames->name }} = new Request({{ $config->modelNames->name }}::factory()->make()->toArray());
-
-        $this->{{$config->modelNames->name}}Service->setId(${{ $config->modelNames->camel }}['id']);
-        $this->{{$config->modelNames->name}}Service->validId(${{ $config->modelNames->camel }}['id']);
-        $this->{{$config->modelNames->name}}Service->setRequest($fake{{ $config->modelNames->name }});
-        $updated{{ $config->modelNames->name }} = $this->{{$config->modelNames->name}}Service->update();
-
-        $this->assertModelData($fake{{ $config->modelNames->name }}->all(), $updated{{ $config->modelNames->name }});
-        $db{{ $config->modelNames->name }} = {{ $config->modelNames->name }}::find(${{ $config->modelNames->camel }}['id']);
-        $this->assertModelData($fake{{ $config->modelNames->name }}->all(), $db{{ $config->modelNames->name }}->toArray());
-    }
-}
+    $this->assertModelData($fake{{ $config->modelNames->name }}->all(), ${{ $config->modelNames->camel }}->toArray());
+    $db{{ $config->modelNames->camel }} = $this->{{ $config->modelNames->camel }}Repository->find(${{ $config->modelNames->camel }}['id']);
+    $this->assertModelData($fake{{ $config->modelNames->name }}->all(), $db{{ $config->modelNames->camel }}->toArray());
+});

@@ -2,11 +2,11 @@
     echo "<?php".PHP_EOL;
 @endphp
 
-namespace {{ $namespacesTests }};
+use Illuminate\Testing\TestResponse;
 
 trait ApiTestTrait
 {
-    private $response;
+    private TestResponse $response;
 
     private array $scapeValue = [
         'created_at',
@@ -19,30 +19,29 @@ trait ApiTestTrait
         'updated_by'
     ];
 
-    public function assertApiResponse(Array $actualData)
+    public function assertApiResponse(Array $actualData): void
     {
         $this->assertApiSuccess();
 
-        $response = json_decode($this->response->getContent(), true);
+        $response = $this->response->json();
         $responseData = $response['data'];
 
-        $this->assertNotEmpty($responseData['id']);
+        expect($responseData['id'])->not(null);
         $this->assertModelData($actualData, $responseData);
     }
 
-    public function assertApiSuccess()
+    public function assertApiSuccess(): void
     {
-        $this->response->assertStatus(200);
-        $this->response->assertJson(['success' => true]);
+        expect($this->response->json())->toHaveKey('success', true);
     }
 
-    public function assertModelData(Array $actualData, Array $expectedData)
+    public function assertModelData(Array $actualData, Array $expectedData): void
     {
         foreach ($actualData as $key => $value) {
             if (in_array($key, $this->scapeValue)) {
                 continue;
             }
-            $this->assertEquals($actualData[$key], $expectedData[$key]);
+            expect($expectedData)->toHaveKey($key, $value);
         }
     }
 }

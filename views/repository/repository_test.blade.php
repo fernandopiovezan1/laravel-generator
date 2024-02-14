@@ -2,74 +2,48 @@
     echo "<?php".PHP_EOL;
 @endphp
 
-namespace {{ $config->namespaces->repositoryTests }};
-
 use {{ $config->namespaces->model }}\{{ $config->modelNames->name }};
 use {{ $config->namespaces->repository }}\{{ $config->modelNames->name }}Repository;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Vinkla\Hashids\Facades\Hashids;
-use {{ $config->namespaces->tests }}\TestCase;
-use {{ $config->namespaces->tests }}\ApiTestTrait;
 
-class {{ $config->modelNames->name }}RepositoryTest extends TestCase
-{
-    use ApiTestTrait;
-    use DatabaseTransactions;
-    use DatabaseMigrations;
+uses(\Tests\ApiTestTrait::class);
 
-    protected {{ $config->modelNames->name }}Repository ${{ $config->modelNames->camel }}Repo;
+uses(\Illuminate\Foundation\Testing\DatabaseTransactions::class);
 
-    /**
-     * @test create
-     */
-    public function test_create_{{ $config->modelNames->snake }}()
-    {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->make()->toArray();
+uses(\Illuminate\Foundation\Testing\DatabaseMigrations::class);
 
-        $created{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->create(${{ $config->modelNames->camel }});
+beforeEach(function () {
+    $this->{{ $config->modelNames->camel }}Repo = app({{ $config->modelNames->name }}Repository::class);
+});
 
-        $created{{ $config->modelNames->name }} = $created{{ $config->modelNames->name }}->toArray();
-        $this->assertArrayHasKey('id', $created{{ $config->modelNames->name }});
-        $this->assertNotNull(
-            {{ $config->modelNames->name }}::find(
-                (int)Hashids::connection('main')->decodeHex($created{{ $config->modelNames->name }}['id'])
-                ), '{{ $config->modelNames->human }} with given id must be in DB');
-        $this->assertModelData(${{ $config->modelNames->camel }}, $created{{ $config->modelNames->name }});
-    }
+test('create {{ $config->modelNames->human }}', function () {
+    ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->make()->toArray();
 
-    /**
-     * @test delete
-     */
-    public function test_delete_{{ $config->modelNames->snake }}()
-    {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
+    $created{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->create(${{ $config->modelNames->camel }});
 
-        $resp = $this->{{ $config->modelNames->camel }}Repo->deleteOrUndelete(${{ $config->modelNames->camel }});
+    $created{{ $config->modelNames->name }} = $created{{ $config->modelNames->name }}->toArray();
+    expect($created{{ $config->modelNames->name }})->toHaveKey('id')
+        ->and($this->{{ $config->modelNames->camel }}Repo->find($created{{ $config->modelNames->name }}['id'])
+        )->not->toBeNull('Classification with given id must be in DB');
+    $this->assertModelData(${{ $config->modelNames->camel }}, $created{{ $config->modelNames->name }});
+});
 
-        $this->assertEquals(200, $resp['code']);
-        ${{ $config->modelNames->camel }}Db = $this->{{ $config->modelNames->camel }}Repo->find(${{ $config->modelNames->camel }}['id']);
-        $this->assertNull($classificationDb, 'Classification successfully deactivated');
-    }
+test('delete {{ $config->modelNames->human }}', function () {
+    ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
 
-    public function setUp() : void
-    {
-        parent::setUp();
-        $this->{{ $config->modelNames->camel }}Repo = app({{ $config->modelNames->name }}Repository::class);
-    }
+    $resp = $this->{{ $config->modelNames->camel }}Repo->deleteOrUndelete(${{ $config->modelNames->camel }});
 
-    /**
-     * @test update
-     */
-    public function test_update_{{ $config->modelNames->snake }}()
-    {
-        ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
-        $fake{{ $config->modelNames->name }} = {{ $config->modelNames->name }}::factory()->make()->toArray();
+    ${{ $config->modelNames->camel }}Db = $this->{{ $config->modelNames->camel }}Repo->find(${{ $config->modelNames->camel }}['id']);
+    expect($resp['code'])->toEqual(200)
+        ->and(${{ $config->modelNames->camel }}Db)->toBeNull('{{ $config->modelNames->camel }} successfully deactivated');
+});
 
-        $updated{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->updateFromModel($fake{{ $config->modelNames->name }}, ${{ $config->modelNames->camel }});
+test('update {{ $config->modelNames->human }}', function () {
+    ${{ $config->modelNames->camel }} = {{ $config->modelNames->name }}::factory()->create();
+    $fake{{ $config->modelNames->name }} = {{ $config->modelNames->name }}::factory()->make()->toArray();
 
-        $this->assertModelData($fake{{ $config->modelNames->name }}, $updated{{ $config->modelNames->name }});
-        $db{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->find(${{ $config->modelNames->camel }}['{{ $config->primaryName }}']);
-        $this->assertModelData($fake{{ $config->modelNames->name }}, $db{{ $config->modelNames->name }}->toArray());
-    }
-}
+    $updated{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->updateFromModel($fake{{ $config->modelNames->name }}, ${{ $config->modelNames->camel }});
+
+    $this->assertModelData($fake{{ $config->modelNames->name }}, $updated{{ $config->modelNames->name }});
+    $db{{ $config->modelNames->name }} = $this->{{ $config->modelNames->camel }}Repo->find(${{ $config->modelNames->camel }}['{{ $config->primaryName }}']);
+    $this->assertModelData($fake{{ $config->modelNames->name }}, $db{{ $config->modelNames->name }}->toArray());
+});
