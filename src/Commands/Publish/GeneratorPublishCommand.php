@@ -28,6 +28,8 @@ class GeneratorPublishCommand extends PublishBaseCommand
         $repositoryPattern = config('laravel_generator.options.repository_pattern', true);
         $baseModel = config('infyom.laravel_generator.options.base_model', true);
         $baseService = config('infyom.laravel_generator.options.base_service', true);
+        $baseRequest = config('infyom.laravel_generator.options.base_request', true);
+
         if ($repositoryPattern) {
             $this->publishBaseRepository();
         }
@@ -39,6 +41,9 @@ class GeneratorPublishCommand extends PublishBaseCommand
         }
         if ($baseService) {
             $this->publishBaseService();
+        }
+        if ($baseRequest) {
+            $this->publishBaseRequest();
         }
     }
 
@@ -137,6 +142,20 @@ class GeneratorPublishCommand extends PublishBaseCommand
 
         $modelPath = app_path('Services/');
         $fileName = 'BaseService.php';
+
+        g_filesystem()->createFile($modelPath.$fileName, $templateData);
+
+        $this->info('AppBaseService created');
+    }
+
+    private function publishBaseRequest()
+    {
+        $templateData = view('laravel-generator::app_base_request', [
+            'namespaceApp' => $this->getLaravel()->getNamespace(),
+        ])->render();
+
+        $modelPath = app_path('Requests/API/');
+        $fileName = 'BaseAPIRequest.php';
 
         g_filesystem()->createFile($modelPath.$fileName, $templateData);
 

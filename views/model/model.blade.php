@@ -16,29 +16,6 @@ class {{ $config->modelNames->name }} extends BaseModel
 {{ infy_tab(4).'use QueryCacheable;' }}
 
     /**
-     * The validation rules.
-     */
-    public static array $rules = [
-        {!! $rules !!}
-    ];
-
-    /**
-     * Invalidate the cache automatically
-     * upon update in the database.
-     */
-    protected static bool $flushCacheOnUpdate = true;
-
-    /**
-     * Provides a detailed description of the expected parameters
-     * in the body of an HTTP request.
-     */
-    protected array $fieldDescriptions = [
-        {!! $fieldDescriptions !!}
-    ];
-
-    public $table = '{{ $config->tableName }}';
-
-    /**
      * Time in seconds to live Cache
      */
     public int $cacheFor = 3600;
@@ -50,6 +27,15 @@ class {{ $config->modelNames->name }} extends BaseModel
     public $fillable = [
         {!! $fillables !!}
     ];
+
+    /**
+     * The validation rules.
+     */
+    public static array $rules = [
+        {!! $rules !!}
+    ];
+
+    public $table = '{{ $config->tableName }}';
 
 @if($customPrimaryKey)@tab()protected $primaryKey = '{{ $customPrimaryKey }}';@nls(2)@endif
 @if($config->connection)@tab()protected $connection = '{{ $config->connection }}';@nls(2)@endif
@@ -64,6 +50,20 @@ class {{ $config->modelNames->name }} extends BaseModel
     protected $casts = [
         {!! $casts !!}
     ];
+
+    /**
+     * Provides a detailed description of the expected parameters
+     * in the body of an HTTP request.
+     */
+    protected array $fieldDescriptions = [
+        {!! $fieldDescriptions !!}
+    ];
+
+    /**
+     * Invalidate the cache automatically
+     * upon update in the database.
+     */
+    protected static bool $flushCacheOnUpdate = true;
 
     /**
      * Check if the model uses the company id field

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
+use Vinkla\Hashids\Facades\Hashids;
 
 abstract class BaseRepository
 {
@@ -22,12 +23,13 @@ abstract class BaseRepository
 
     protected Builder|Model $baseQuery;
 
-    /** @var array campos que podem ser usados na busca */
+    /** @var array fields that can be used in the search */
     protected array $fieldSearchable = [];
 
-    /** @var array campos que fazem parte do índice FullText da tabela */
+    /** @var array fields that are part of the table's FullText index */
     protected array $fieldsFullText = [];
 
+    /** @var Model model used in repository */
     protected Model $model;
 
     public function __construct(Application $app)
@@ -35,14 +37,13 @@ abstract class BaseRepository
         $this->app = $app;
         $this->makeModel();
         $this->baseQuery = $this->newBaseQuery();
-        if ($this->model->hasCompanyId()) {
-            $this->verifyLimiter();
-        }
+//        if ($this->model->hasCompanyId()) {
+//            $this->verifyLimiter();
+//        }
     }
 
     /**
-     * Busca em todos os campos da tabela pela string enviada.
-     * função utiliza OR por padrão
+     * Search in all fields of the table for the string sent function uses OR by default
      */
     public function advancedSearch(Request $request): Builder|Model
     {
@@ -97,7 +98,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Cria a estrutura para sincronizar a tabela de ManyToMany
+     * Creates the structure to synchronize the ManyToMany table
      */
     public function createSync(array $input, string $relation): array
     {
@@ -109,7 +110,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Deleta o registro da model
+     * Delete the model record
      */
     public function delete(int $id): bool|null
     {
@@ -119,27 +120,20 @@ abstract class BaseRepository
     }
 
     /**
-     * Deleta ou restaura o registro da model
+     * Deletes or restores the model registration
      */
-    public function deleteOrUndelete(int $id): array
+    public function deleteOrUndelete(BaseModel $model): array
     {
-        $baseModel = $this->find($id);
-        if (is_null($baseModel)) {
-            return [
-                'code' => 404,
-                'message' => __($this->getModelName()).' not found',
-            ];
-        }
-        if (!empty($baseModel->deleted_at)) {
-            if (!is_null($baseModel->deleted_at)) {
-                $baseModel->restore();
+        if (!empty($model->deleted_at)) {
+            if (!is_null($model->deleted_at)) {
+                $model->restore();
                 return [
                     'code' => 200,
                     'message' => __($this->getModelName()).' successfully reactivated',
                 ];
             }
         }
-        $baseModel->delete();
+        $model->delete();
         return [
             'code' => 200,
             'message' => __($this->getModelName()).' successfully deactivated',
@@ -147,7 +141,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Executa a busca de acordo com os dados do recebidos
+     * Executes the search according to the data received
      */
     public function executeSearch(Request $request): LengthAwarePaginator
     {
@@ -165,6 +159,9 @@ abstract class BaseRepository
      */
     public function find(int|string $id): Builder|Collection|BaseModel|null
     {
+        if (!is_numeric($id)) {
+            $id = (int) Hashids::connection('main')->decodeHex($id);
+        }
         $query = $this->newBaseQuery();
         return $query->find($id);
     }
@@ -206,7 +203,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Adiciona um where na query padrão
+     * Add a where to the standard query
      */
     public function findBy(
         array|string|\Closure $column,
@@ -219,7 +216,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Método para executar limpeza de cache de qualquer model passada por parametro
+     * Method to perform cache cleaning of any model passed by parameter
      */
     public function flushCache(Request $request): array
     {
@@ -245,13 +242,16 @@ abstract class BaseRepository
      */
     abstract public function getFieldsSearchable(): array;
 
+    /**
+     * Retrieves the name of the model used
+     */
     public function getModelName(): string
     {
         return Str::singular(Str::studly($this->model->getTable()));
     }
 
     /**
-     * Busca todos os models do sistema que estão na pasta Models
+     * Searches for all system models that are in the Models folder
      */
     public function getModels(): array
     {
@@ -284,8 +284,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Função responsável por montar o where para tabelas relacionadas
-     * de acordo com os parâmetros
+     * Function responsible for assembling the where for related tables according to the parameters
      */
     public function getWherehas(Request $request, string $type): void
     {
@@ -336,8 +335,7 @@ abstract class BaseRepository
     abstract public function model(): string|BaseModel;
 
     /**
-     * Montar o array para sincronizar na tabela relacionada
-     * montagem obrigatória para ManyToMany
+     * Assemble the array to synchronize in the related table mandatory assembly for ManyToMany
      */
     public function mountValueRelation(array $input, string $fieldsInsert): string|array
     {
@@ -352,6 +350,9 @@ abstract class BaseRepository
         return $type;
     }
 
+    /**
+     * Instantiates a new query in the model
+     */
     public function newBaseQuery(): Builder
     {
         return $this->model->newQuery();
@@ -369,8 +370,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Função para sincronizar dados das tabelas relacionadas
-     * seria o mesmo que o sync mas para relações hasMany
+     * Function to synchronize data from related tables would be the same as sync but for hasMany relationships
      */
     public function syncHasMany(array $input, Model $baseModel): void
     {
@@ -399,7 +399,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Atualiza o registro da model pelo Id
+     * Update the model record by Id
      */
     public function update(array $input, int $id): array
     {
@@ -410,8 +410,16 @@ abstract class BaseRepository
     }
 
     /**
-     * Função que faz a iteração dos dados
-     * para inserir dados na tabelas relacionadas
+     * Update the already instantiated model with the values from the request
+     */
+    public function updateFromModel(array $values, BaseModel $model): array
+    {
+        $model->update($values);
+        return $model->toArray();
+    }
+
+    /**
+     * Function that iterates data to insert data into related tables
      */
     public function variousCreateMany(array $input, Model $baseModel): void
     {
@@ -423,7 +431,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Verifica se esta filtrando registro ativo/inativo
+     * Check if you are filtering active/inactive records
      */
     public function verifyActive(Request $request): void
     {
@@ -440,7 +448,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Remove a relação da query executada
+     * Removes the relationship from the executed query
      */
     protected function hideWith(Request $request): void
     {
@@ -455,9 +463,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Retorna as iniciais de um nome/frase informado
-     * @param  string  $value
-     * @return string
+     * Returns the initials of a given name/phrase
      */
     protected function initials(string $value): string
     {
@@ -470,8 +476,8 @@ abstract class BaseRepository
     }
 
     /**
-     * Monta os campos passados por parametros para o select
-     * remove os campos que não fazem parte da Model para evitar quebra de SQL
+     * Assembles the fields passed by parameters to the select removes the fields
+     * that are not part of the Model to avoid breaking SQL
      */
     protected function mountFieldsToSelect(Request $request): void
     {
@@ -490,7 +496,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Monta o filtro por data tanto com Between como busca direta
+     * Set the filter by date both with Between and direct search
      */
     protected function mountSelectToDates(Request $request): void
     {
@@ -529,15 +535,17 @@ abstract class BaseRepository
     }
 
     /**
-     * Insere ordenação a consulta.
-     * Se houver valor insere o valor e a direção
-     * caso contrário ordena por Id desc
+     * Insert ordering into the query. If there is a value, insert the value and
+     * direction otherwise sort by Id desc
      */
     protected function orderByRaw(string|null $order, string|null $dir): void
     {
         $this->baseQuery->orderByRaw($order ?? 'id'.' '.$dir ?? 'DESC');
     }
 
+    /**
+     * Checks if there is a related company_id to force the search only for the user's company
+     */
     protected function verifyLimiter(): void
     {
         if ($this->model->hasCompanyId()) {

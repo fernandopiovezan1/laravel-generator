@@ -33,9 +33,6 @@ class Update{{ $config->modelNames->name }}APIRequest extends BaseAPIRequest
      */
     public function rules(): array
     {
-        $rules = {{ $config->modelNames->name }}::$rules;
-        {!! $uniqueRules !!}
-        return $rules;
+        return {{ $config->modelNames->name }}::$rules;
     }
 }
-

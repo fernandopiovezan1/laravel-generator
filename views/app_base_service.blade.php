@@ -77,5 +77,4 @@ abstract class BaseService
     {
         return $this->repository->updateFromModel($this->request->all(), $model);
     }
-
 }

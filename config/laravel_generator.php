@@ -175,6 +175,8 @@ return [
 
         'base_service' => true,
 
+        'base_request' => true,
+
         'service_pattern' => true
     ],
 
