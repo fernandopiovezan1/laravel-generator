@@ -4,8 +4,8 @@
 
 namespace {{ $config->namespaces->apiTests }};
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use {{ $config->namespaces->tests }}\TestCase;
 use {{ $config->namespaces->tests }}\ApiTestTrait;
@@ -13,7 +13,18 @@ use {{ $config->namespaces->model }}\{{ $config->modelNames->name }};
 
 class {{ $config->modelNames->name }}ApiTest extends TestCase
 {
-    use ApiTestTrait, WithoutMiddleware, DatabaseTransactions, DatabaseMigrations;
+    use ApiTestTrait;
+    use DatabaseTransactions;
+    use DatabaseMigrations;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // Create user e authenticate with he
+        $user = User::factory()->create();
+        $this->actingAs($user);
+    }
 
     /**
      * @test
@@ -80,6 +91,6 @@ class {{ $config->modelNames->name }}ApiTest extends TestCase
             '/{{ $config->apiPrefix }}/{{ $config->modelNames->dashedPlural }}/'.${{ $config->modelNames->camel }}['{{ $config->primaryName }}']
         );
 
-        $this->response->assertStatus(404);
+        $this->response->assertStatus(400);
     }
 }

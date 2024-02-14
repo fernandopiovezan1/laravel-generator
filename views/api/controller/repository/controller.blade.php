@@ -20,11 +20,9 @@ class {{ $config->modelNames->name }}APIController extends AppBaseController
     }
 
     {!! $docDestroy !!}
-    public function destroy(string $id): JsonResponse
+    public function destroy({{ $config->modelNames->name }} ${{ $config->modelNames->camel }}): JsonResponse
     {
-        $this->{{$config->modelNames->camel}}Service->setId($id);
-
-        return $this->response($this->{{$config->modelNames->camel}}Service->delete());
+        return $this->response($this->{{$config->modelNames->camel}}Service->delete(${{ $config->modelNames->camel }}));
     }
 
     {!! $docIndex !!}
@@ -39,18 +37,8 @@ class {{ $config->modelNames->name }}APIController extends AppBaseController
     }
 
     {!! $docShow !!}
-    public function show(string $id): JsonResponse
+    public function show({{ $config->modelNames->name }} ${{ $config->modelNames->camel }}): JsonResponse
     {
-        $this->{{$config->modelNames->camel}}Service->setId($id);
-
-        /** @var {{ $config->modelNames->name }} ${{ $config->modelNames->camel }} */
-        ${{ $config->modelNames->camel }} = $this->{{$config->modelNames->camel}}Service->find();
-
-        if (empty(${{ $config->modelNames->camel }})) {
-            return $this->sendError(
-                __('messages.not_found', ['model' => __('models/{{ $config->modelNames->camelPlural }}.singular')])
-            );
-        }
         return $this->sendResponse(
             ${{ $config->modelNames->camel }}->toArray(),
             __('messages.retrieved', ['model' => __('models/{{ $config->modelNames->camelPlural }}.singular')])
@@ -71,20 +59,10 @@ class {{ $config->modelNames->name }}APIController extends AppBaseController
     }
 
     {!! $docUpdate !!}
-    public function update(string $id, Update{{ $config->modelNames->name }}APIRequest $request): JsonResponse
+    public function update(Update{{ $config->modelNames->name }}APIRequest $request, {{ $config->modelNames->name }} ${{ $config->modelNames->camel }}): JsonResponse
     {
-        /** @var {{ $config->modelNames->name }} ${{ $config->modelNames->camel }} */
-        ${{ $config->modelNames->camel }} = $this->{{$config->modelNames->camel}}Service->validId($id);
-
-        if (empty(${{ $config->modelNames->camel }})) {
-            return $this->sendError(
-                __('messages.not_found', ['model' => __('models/{{ $config->modelNames->camelPlural }}.singular')])
-            );
-        }
-
-        $this->{{$config->modelNames->camel}}Service->setId($id);
         $this->{{$config->modelNames->camel}}Service->setRequest($request);
-        ${{ $config->modelNames->camel }} = $this->{{$config->modelNames->camel}}Service->update();
+        ${{ $config->modelNames->camel }} = $this->{{$config->modelNames->camel}}Service->update(${{ $config->modelNames->camel }});
 
         return $this->sendResponse(
             ${{ $config->modelNames->camel }},

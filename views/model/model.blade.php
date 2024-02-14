@@ -68,7 +68,7 @@ class {{ $config->modelNames->name }} extends BaseModel
     /**
      * Check if the model uses the company id field
      */
-    protected bool $hasCompanyId = false;
+    protected bool $hasCompanyId = true;
 
     /**
      * The attributes that should be hidden for serialization.
