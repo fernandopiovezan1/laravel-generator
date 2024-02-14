@@ -173,6 +173,8 @@ return [
 
         'base_model' => false,
 
+        'base_service' => true,
+
         'service_pattern' => true
     ],
 

@@ -27,6 +27,7 @@ class GeneratorPublishCommand extends PublishBaseCommand
         $this->publishBaseController();
         $repositoryPattern = config('laravel_generator.options.repository_pattern', true);
         $baseModel = config('infyom.laravel_generator.options.base_model', true);
+        $baseService = config('infyom.laravel_generator.options.base_service', true);
         if ($repositoryPattern) {
             $this->publishBaseRepository();
         }
@@ -35,6 +36,9 @@ class GeneratorPublishCommand extends PublishBaseCommand
         }
         if ($baseModel) {
             $this->publishBaseModel();
+        }
+        if ($baseService) {
+            $this->publishBaseService();
         }
     }
 
@@ -113,7 +117,7 @@ class GeneratorPublishCommand extends PublishBaseCommand
 
     private function publishBaseModel()
     {
-        $templateData = view('laravel-generator::stubs.app_base_model', [
+        $templateData = view('laravel-generator::app_base_model', [
             'namespaceApp' => $this->getLaravel()->getNamespace(),
         ])->render();
 
@@ -123,6 +127,20 @@ class GeneratorPublishCommand extends PublishBaseCommand
         g_filesystem()->createFile($modelPath.$fileName, $templateData);
 
         $this->info('AppBaseModel created');
+    }
+
+    private function publishBaseService()
+    {
+        $templateData = view('laravel-generator::app_base_service', [
+            'namespaceApp' => $this->getLaravel()->getNamespace(),
+        ])->render();
+
+        $modelPath = app_path('Services/');
+        $fileName = 'BaseService.php';
+
+        g_filesystem()->createFile($modelPath.$fileName, $templateData);
+
+        $this->info('AppBaseService created');
     }
 
     private function publishBaseRepository()

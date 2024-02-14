@@ -21,7 +21,7 @@ class ServiceTestGenerator extends BaseGenerator
 
     protected function generateService()
     {
-        $templateData = view('laravel-generator::services.test.index', $this->variables())->render();
+        $templateData = view('laravel-generator::services.service_test', $this->variables())->render();
 
         g_filesystem()->createFile($this->path . '/' . $this->serviceFileName, $templateData);
 
