@@ -37,9 +37,9 @@ abstract class BaseRepository
         $this->app = $app;
         $this->makeModel();
         $this->baseQuery = $this->newBaseQuery();
-//        if ($this->model->hasCompanyId()) {
-//            $this->verifyLimiter();
-//        }
+        if ($this->model->hasCompanyId()) {
+            $this->verifyLimiter();
+        }
     }
 
     /**
@@ -435,7 +435,7 @@ abstract class BaseRepository
      */
     public function verifyActive(Request $request): void
     {
-        if (!in_array(SoftDeletes::class, class_uses_recursive($this->baseQuery))) {
+        if (!in_array(SoftDeletes::class, class_uses_recursive($this->baseQuery->getModel()))) {
             return;
         }
         if ($request->exists('is_active')) {
@@ -538,9 +538,11 @@ abstract class BaseRepository
      * Insert ordering into the query. If there is a value, insert the value and
      * direction otherwise sort by Id desc
      */
-    protected function orderByRaw(string|null $order, string|null $dir): void
+    protected function orderByRaw(?string $order, ?string $dir): void
     {
-        $this->baseQuery->orderByRaw($order ?? 'id'.' '.$dir ?? 'DESC');
+        $order = $order ?? 'id';
+        $dir = $dir ?? 'DESC';
+        $this->baseQuery->orderByRaw("$order $dir");
     }
 
     /**

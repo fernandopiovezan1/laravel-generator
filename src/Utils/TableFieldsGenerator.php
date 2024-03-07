@@ -6,6 +6,7 @@ use DB;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Illuminate\Support\Str;
+use InfyOm\Generator\Common\GeneratorConfig;
 use InfyOm\Generator\Common\GeneratorField;
 use InfyOm\Generator\Common\GeneratorFieldRelation;
 
@@ -60,8 +61,11 @@ class TableFieldsGenerator
     /** @var \Doctrine\DBAL\Schema\Table */
     public $tableDetails;
 
+    public GeneratorConfig $config;
+
     public function __construct($tableName, $ignoredFields, $connection = '')
     {
+        $this->config = app(GeneratorConfig::class);
         $this->tableName = $tableName;
         $this->ignoredFields = $ignoredFields;
 
@@ -94,7 +98,7 @@ class TableFieldsGenerator
                 $this->columns[] = $column;
             }
         }
-        
+
         $this->fullTextIndices = $this->getFullTextIndexOfTable($tableName);
         $this->primaryKey = $this->getPrimaryKeyOfTable($tableName);
         $this->timestamps = static::getTimestampFieldNames();
@@ -159,6 +163,8 @@ class TableFieldsGenerator
                 $field->inForm = false;
                 $field->inIndex = false;
                 $field->inView = false;
+            } elseif (in_array($field->name, $this->config->options->excludedFillable)) {
+                $field->isFillable = false;
             }
             $field->isNotNull = $column->getNotNull();
             $field->description = $column->getComment() ?? ''; // get comments from table
@@ -180,7 +186,7 @@ class TableFieldsGenerator
 
         return $column ? $column->getColumns()[0] : '';
     }
-    
+
     public function getFullTextIndexOfTable($tableName)
     {
         $indexes = $this->schemaManager->listTableDetails($tableName)->getIndexes();
@@ -266,7 +272,7 @@ class TableFieldsGenerator
 
         return $field;
     }
-    
+
     private function checkForFullText(GeneratorField $field)
     {
         return in_array($field->name, $this->fullTextIndices);

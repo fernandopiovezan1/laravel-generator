@@ -167,6 +167,13 @@ return [
             'company_id',
         ], // Array of columns that doesn't required while creating module,
 
+        'excluded_fillable' => [
+            'company_id',
+            'created_by',
+            'updated_by',
+            'deleted_by',
+        ],
+
         'separate_rules' => true,
 
         'body_parameter' => true,

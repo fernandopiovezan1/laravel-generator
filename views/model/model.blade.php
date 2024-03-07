@@ -71,15 +71,6 @@ class {{ $config->modelNames->name }} extends BaseModel
     protected bool $hasCompanyId = true;
 
     /**
-     * The attributes that should be hidden for serialization.
-     * @var array
-     */
-    protected $hidden = [
-        'deleted_by',
-        'deleted_at',
-    ];
-
-    /**
      * Responsible for determining which relationships will be used in queries
      */
     protected array $relationsBySearch = [

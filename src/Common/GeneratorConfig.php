@@ -280,6 +280,7 @@ class GeneratorConfig
         $options->swagger = config('laravel_generator.options.swagger', false);
         $options->tests = config('laravel_generator.options.tests', false);
         $options->excludedFields = config('laravel_generator.options.excluded_fields', ['id']);
+        $options->excludedFillable = config('laravel_generator.options.excluded_fillable', ['id']);
         $options->servicePattern = config('laravel_generator.options.service_pattern', false);
 
         $this->options = $options;

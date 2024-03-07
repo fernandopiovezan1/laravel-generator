@@ -5,18 +5,12 @@
 namespace App\Models;
 
 use App\Traits\CustomSoftDelete;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Request;
 use Vinkla\Hashids\Facades\Hashids;
 
-/**
- * @property array $fieldDescription
- */
 abstract class BaseModel extends Model
 {
     use CustomSoftDelete;
@@ -28,11 +22,6 @@ abstract class BaseModel extends Model
     protected $appends = [
         'is_active',
     ];
-
-    /**
-     * Fields description from database
-     */
-    protected array $fieldDescription;
 
     /**
      * This attribute checks if the table is multi tenancy
@@ -55,14 +44,6 @@ abstract class BaseModel extends Model
     public static function getCastsStatic(): array
     {
         return (new static())->getCasts();
-    }
-
-    /**
-     * Return fields description from database
-     */
-    public static function getFieldDescription(): array
-    {
-        return (new static())->fieldDescription;
     }
 
     /**
@@ -93,26 +74,6 @@ abstract class BaseModel extends Model
     }
 
     /**
-     * Retrieve the model for a bound value.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Relations\Relation  $query
-     * @param  mixed  $value
-     * @param  string|null  $field
-     */
-    public function resolveRouteBindingQuery($query, $value, $field = null): Builder|Relation
-    {
-        if (!is_numeric($value)) {
-            $id = (int) Hashids::connection('main')->decodeHex($value);
-        } else {
-            $id = $value;
-        }
-        if (Request::method() === 'DELETE') {
-            return $query->where($field ?? $this->getRouteKeyName(), $id)->withTrashed();
-        }
-        return $query->where($field ?? $this->getRouteKeyName(), $id);
-    }
-
-    /**
      * Function responsible for writing log where defined
      */
     public function saveLog(Model $model, string $event): array
@@ -129,11 +90,15 @@ abstract class BaseModel extends Model
 
     /**
      * Convert the model instance to an array.
+     * @return array
      */
     public function toArray(): array
     {
         $array = parent::toArray();
-        if (isset($array['id']) && getenv('USE_HASH')) {
+        $array['created_by'] = $array['created_by']['name'] ?? null;
+        $array['updated_by'] = $array['updated_by']['name'] ?? null;
+        $array['deleted_by'] = $array['deleted_by']['name'] ?? null;
+        if (isset($array['id']) && env('USE_HASH', true)) {
             $array['id'] = Hashids::connection('main')->encodeHex($array['id']);
         }
         return $array;
@@ -174,5 +139,13 @@ abstract class BaseModel extends Model
         return new Attribute(
             get: fn() => empty($this->deleted_at),
         );
+    }
+
+    /**
+     * Prepare a date for array / JSON serialization.
+     */
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d H:i:s');
     }
 }

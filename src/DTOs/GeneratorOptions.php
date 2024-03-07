@@ -15,4 +15,5 @@ class GeneratorOptions
     public bool $tests;
     public bool $servicePattern;
     public array $excludedFields;
+    public array $excludedFillable;
 }
