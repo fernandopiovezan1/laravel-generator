@@ -18,6 +18,7 @@ use InfyOm\Generator\Generators\API\APIResourceGenerator;
 use InfyOm\Generator\Generators\API\APIRoutesGenerator;
 use InfyOm\Generator\Generators\API\APITestGenerator;
 use InfyOm\Generator\Generators\FactoryGenerator;
+use InfyOm\Generator\Generators\FrontQuasarGenerator;
 use InfyOm\Generator\Generators\MigrationGenerator;
 use InfyOm\Generator\Generators\ModelGenerator;
 use InfyOm\Generator\Generators\RepositoryGenerator;
@@ -127,6 +128,12 @@ class BaseCommand extends Command
             $serviceTestGenerator = app(ServiceTestGenerator::class);
             $serviceTestGenerator->generate();
         }
+    }
+
+    public function generateFrontItems()
+    {
+        $frontGenerator = app(FrontQuasarGenerator::class);
+        $frontGenerator->generate();
     }
 
     public function generateScaffoldItems()

@@ -58,6 +58,8 @@ return [
         'views'             => resource_path('views/'),
 
         'menu_file'         => resource_path('views/layouts/menu.blade.php'),
+
+        'frontend'          => base_path('front/'),
     ],
 
     /*

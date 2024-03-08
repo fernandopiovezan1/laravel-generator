@@ -187,6 +187,8 @@ class GeneratorConfig
             app_path('Providers/ViewServiceProvider.php')
         );
 
+        $paths->frontend = config('laravel_generator.path.frontend', base_path('front/'));
+
         $this->paths = $paths;
     }
 

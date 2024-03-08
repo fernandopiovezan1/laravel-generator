@@ -13,6 +13,7 @@ class GeneratorPaths
     public string $databaseSeeder;
     public string $viewProvider;
     public string $service;
+    public string $frontend;
 
     public string $apiController;
     public string $apiResource;

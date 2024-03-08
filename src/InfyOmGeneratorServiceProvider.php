@@ -13,6 +13,7 @@ use InfyOm\Generator\Commands\APIScaffoldGeneratorCommand;
 use InfyOm\Generator\Commands\Common\MigrationGeneratorCommand;
 use InfyOm\Generator\Commands\Common\ModelGeneratorCommand;
 use InfyOm\Generator\Commands\Common\RepositoryGeneratorCommand;
+use InfyOm\Generator\Commands\Front\FrontGeneratorCommand;
 use InfyOm\Generator\Commands\Publish\GeneratorPublishCommand;
 use InfyOm\Generator\Commands\Publish\PublishTablesCommand;
 use InfyOm\Generator\Commands\Publish\PublishUserCommand;
@@ -111,6 +112,8 @@ class InfyOmGeneratorServiceProvider extends ServiceProvider
             ViewsGeneratorCommand::class,
 
             RollbackGeneratorCommand::class,
+
+            FrontGeneratorCommand::class
         ]);
     }
 
