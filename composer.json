@@ -26,7 +26,7 @@
         "illuminate/support": "^10.0|^11.0",
         "illuminate/console": "^10.0|^11.0",
         "laracasts/flash": "^3.2.2",
-        "laravelcollective/html": "^6.4",
+        "laravelcollective/html": "^6.0|^7.0|^8.0|^9.0|^10.0",
         "symfony/var-exporter": "^6.2.5|^7.0"
     },
     "require-dev": {
