@@ -74,3 +74,27 @@ if (!function_exists('create_resource_route_names')) {
         return $result;
     }
 }
+
+if (!function_exists('get_field_length')) {
+    function get_field_length($type): string
+    {
+        preg_match('/\(\s*(\d+(?:,\s*\d+)*)\s*\)/', $type, $matches);
+        return $matches[1] ?? 0;
+    }
+}
+
+if (!function_exists('get_field_precision')) {
+    function get_field_precision($length): int
+    {
+        $precision = explode(',', $length);
+        return $precision[0] ?? 0;
+    }
+}
+
+if (!function_exists('get_field_scale')) {
+    function get_field_scale($length): int
+    {
+        $precision = explode(',', $length);
+        return $precision[1] ?? 0;
+    }
+}

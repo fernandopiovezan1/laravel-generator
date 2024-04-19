@@ -205,8 +205,10 @@ class ModelGenerator extends BaseGenerator
                             $rule[] = 'string';
 
                             // Enforce a maximum string length if possible.
-                            if ((int) $field->fieldDetails->getLength() > 0) {
-                                $rule[] = 'max:'.$field->fieldDetails->getLength();
+
+                    $length = get_field_length($field->fieldDetails['type']);
+                            if ((int) $length > 1) {
+                                $rule[] = 'max:'.$length;
                             }
                             break;
                     }

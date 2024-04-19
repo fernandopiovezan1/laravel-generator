@@ -5,6 +5,7 @@ namespace InfyOm\Generator\Utils;
 use DB;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use InfyOm\Generator\Common\GeneratorConfig;
 use InfyOm\Generator\Common\GeneratorField;
@@ -69,34 +70,10 @@ class TableFieldsGenerator
         $this->tableName = $tableName;
         $this->ignoredFields = $ignoredFields;
 
-        if (!empty($connection)) {
-            $this->schemaManager = DB::connection($connection)->getDoctrineSchemaManager();
-        } else {
-            $this->schemaManager = DB::getDoctrineSchemaManager();
-        }
-
-        $platform = $this->schemaManager->getDatabasePlatform();
-        $defaultMappings = [
-            'enum' => 'string',
-            'json' => 'text',
-            'bit'  => 'boolean',
-        ];
-
-//        $this->tableDetails = $this->schemaManager->listTableDetails($this->tableName);
-
-        $mappings = config('laravel_generator.from_table.doctrine_mappings', []);
-        $mappings = array_merge($mappings, $defaultMappings);
-        foreach ($mappings as $dbType => $doctrineType) {
-            $platform->registerDoctrineTypeMapping($dbType, $doctrineType);
-        }
-        // Added
-        $this->tableDetails = $this->schemaManager->listTableDetails($this->tableName);
-
-        $columns = $this->schemaManager->listTableColumns($tableName);
-
+        $columns = Schema::getColumns($tableName);
         $this->columns = [];
         foreach ($columns as $column) {
-            if (!in_array($column->getName(), $ignoredFields)) {
+            if (!in_array($column['name'], $ignoredFields)) {
                 $this->columns[] = $column;
             }
         }
@@ -113,7 +90,7 @@ class TableFieldsGenerator
     public function prepareFieldsFromTable()
     {
         foreach ($this->columns as $column) {
-            $type = $column->getType()->getName();
+            $type = $column['type_name'];
 
             switch ($type) {
                 case 'integer':
@@ -126,7 +103,7 @@ class TableFieldsGenerator
                     $field = $this->generateIntFieldInput($column, 'bigInteger');
                     break;
                 case 'boolean':
-                    $name = Str::title(str_replace('_', ' ', $column->getName()));
+                    $name = Str::title(str_replace('_', ' ', $column['name']));
                     $field = $this->generateField($column, 'boolean', 'checkbox');
                     break;
                 case 'datetime':
@@ -168,8 +145,8 @@ class TableFieldsGenerator
             } elseif (in_array($field->name, $this->config->options->excludedFillable)) {
                 $field->isFillable = false;
             }
-            $field->isNotNull = $column->getNotNull();
-            $field->description = $column->getComment() ?? ''; // get comments from table
+            $field->isNotNull = !$column['nullable'];
+            $field->description = $column['comment'] ?? ''; // get comments from table
 
             $this->fields[] = $field;
         }
@@ -184,27 +161,34 @@ class TableFieldsGenerator
      */
     public function getPrimaryKeyOfTable($tableName)
     {
-        $column = $this->schemaManager->listTableDetails($tableName)->getPrimaryKey();
+        $column = '';
+        foreach (Schema::getIndexes($tableName) as $index) {
+            if ($index['primary']) {
+                $column = $index['columns'][0];
+            }
+        }
 
-        return $column ? $column->getColumns()[0] : '';
+        return $column;
     }
 
     public function getFullTextIndexOfTable($tableName)
     {
-        $indexes = $this->schemaManager->listTableDetails($tableName)->getIndexes();
+
+        $indexes = Schema::getIndexes($tableName);
         $complete = false;
         $fullTextIndices = [];
 
-        foreach ($indexes as $index) {
-            foreach ($index->getFlags() as $flag) {
-                if ($flag == 'fulltext' && !$complete) {
-                    foreach ($index->getColumns() as $column) {
-                        $fullTextIndices[] = $column;
-                        $complete = true;
-                    }
-                }
-            }
-        }
+        /**  TODO */
+//        foreach ($indexes as $index) {
+//            foreach ($index->getFlags() as $flag) {
+//                if ($flag == 'fulltext' && !$complete) {
+//                    foreach ($index->getColumns() as $column) {
+//                        $fullTextIndices[] = $column;
+//                        $complete = true;
+//                    }
+//                }
+//            }
+//        }
         return $fullTextIndices;
     }
 
@@ -237,17 +221,17 @@ class TableFieldsGenerator
     private function generateIntFieldInput($column, $dbType)
     {
         $field = new GeneratorField();
-        $field->name = $column->getName();
+        $field->name = $column['name'];
         $field->parseDBType($dbType);
         $field->htmlType = 'number';
 
-        if ($column->getAutoincrement()) {
+        if ($column['auto_increment']) {
             $field->dbType .= ',true';
         } else {
             $field->dbType .= ',false';
         }
 
-        if ($column->getUnsigned()) {
+        if (str_contains($column['type'], 'unsigned')) {
             $field->dbType .= ',true';
         }
 
@@ -292,8 +276,8 @@ class TableFieldsGenerator
     private function generateField($column, $dbType, $htmlType)
     {
         $field = new GeneratorField();
-        $field->name = $column->getName();
-        $field->fieldDetails = $this->tableDetails->getColumn($field->name);
+        $field->name = $column['name'];
+        $field->fieldDetails = $column;
         $field->parseDBType($dbType); //, $column); TODO: handle column param
         $field->parseHtmlInput($htmlType);
         $field->isFullText = $this->checkForFullText($field);
@@ -312,12 +296,13 @@ class TableFieldsGenerator
     private function generateNumberInput($column, $dbType)
     {
         $field = new GeneratorField();
-        $field->name = $column->getName();
-        $field->parseDBType($dbType.','.$column->getPrecision().','.$column->getScale());
+        $field->name = $column['name'];
+        $length = get_field_length($column['type']);
+        $field->parseDBType($dbType . ',' . get_field_precision($length) . ',' . get_field_scale($length));
         $field->htmlType = 'number';
 
         if ($dbType === 'decimal') {
-            $field->numberDecimalPoints = $column->getScale();
+            $field->numberDecimalPoints = explode(',', $length)[1];
         }
 
         return $this->checkForPrimary($field);
@@ -339,25 +324,27 @@ class TableFieldsGenerator
      */
     public function prepareForeignKeys()
     {
-        $tables = $this->schemaManager->listTables();
+        $tables = Schema::getTables();
 
         $fields = [];
 
         foreach ($tables as $table) {
-            $primaryKey = $table->getPrimaryKey();
-            if ($primaryKey) {
-                $primaryKey = $primaryKey->getColumns()[0];
+            $primaryKey = '';
+            foreach (Schema::getIndexes($table['name']) as $index) {
+                if ($index['primary']) {
+                    $primaryKey = $index['columns'][0];
+                }
             }
             $formattedForeignKeys = [];
-            $tableForeignKeys = $table->getForeignKeys();
+            $tableForeignKeys = Schema::getForeignKeys($table['name']);
             foreach ($tableForeignKeys as $tableForeignKey) {
                 $generatorForeignKey = new GeneratorForeignKey();
-                $generatorForeignKey->name = $tableForeignKey->getName();
-                $generatorForeignKey->localField = $tableForeignKey->getLocalColumns()[0];
-                $generatorForeignKey->foreignField = $tableForeignKey->getForeignColumns()[0];
-                $generatorForeignKey->foreignTable = $tableForeignKey->getForeignTableName();
-                $generatorForeignKey->onUpdate = $tableForeignKey->onUpdate();
-                $generatorForeignKey->onDelete = $tableForeignKey->onDelete();
+                $generatorForeignKey->name = $tableForeignKey['name'];
+                $generatorForeignKey->localField = $tableForeignKey['columns'][0];
+                $generatorForeignKey->foreignField = $tableForeignKey['foreign_columns'][0];
+                $generatorForeignKey->foreignTable = $tableForeignKey['foreign_table'];
+                $generatorForeignKey->onUpdate = $tableForeignKey['on_update'];
+                $generatorForeignKey->onDelete = $tableForeignKey['on_delete'];
 
                 $formattedForeignKeys[] = $generatorForeignKey;
             }
@@ -366,7 +353,7 @@ class TableFieldsGenerator
             $generatorTable->primaryKey = $primaryKey;
             $generatorTable->foreignKeys = $formattedForeignKeys;
 
-            $fields[$table->getName()] = $generatorTable;
+            $fields[$table['name']] = $generatorTable;
         }
 
         return $fields;
