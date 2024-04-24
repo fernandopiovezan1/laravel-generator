@@ -262,8 +262,9 @@ class BaseCommand extends Command
             'fields'   => [],
         ];
 
+
         foreach ($this->config->fields as $field) {
-            $locales['fields'][$field->name] = Str::title(str_replace('_', ' ', $field->name));
+            $locales['fields'][$field->name] = $field->description ?? Str::title(str_replace('_', ' ', $field->name));
         }
 
         $path = lang_path(getenv('APP_LOCALE').'/models/');
