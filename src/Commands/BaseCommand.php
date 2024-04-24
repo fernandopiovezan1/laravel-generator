@@ -266,7 +266,7 @@ class BaseCommand extends Command
             $locales['fields'][$field->name] = Str::title(str_replace('_', ' ', $field->name));
         }
 
-        $path = lang_path('en/models/');
+        $path = lang_path(getenv('APP_LOCALE').'/models/');
 
         $fileName = $this->config->modelNames->snakePlural.'.php';
 
