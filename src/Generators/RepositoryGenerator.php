@@ -36,7 +36,7 @@ class RepositoryGenerator extends BaseGenerator
         $searchables = [];
 
         foreach ($this->config->fields as $field) {
-            if ($field->isSearchable) {
+            if ($field->isSearchable && !in_array($field->name, $this->config->options->excludedFillable)) {
                 $searchables[] = "'".$field->name."'";
             }
         }

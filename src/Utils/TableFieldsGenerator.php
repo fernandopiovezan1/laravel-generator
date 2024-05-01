@@ -94,6 +94,7 @@ class TableFieldsGenerator
 
             switch ($type) {
                 case 'integer':
+                case 'int':
                     $field = $this->generateIntFieldInput($column, 'integer');
                     break;
                 case 'smallint':
@@ -103,7 +104,7 @@ class TableFieldsGenerator
                     $field = $this->generateIntFieldInput($column, 'bigInteger');
                     break;
                 case 'boolean':
-                    $name = Str::title(str_replace('_', ' ', $column['name']));
+                case 'tinyint':
                     $field = $this->generateField($column, 'boolean', 'checkbox');
                     break;
                 case 'datetime':

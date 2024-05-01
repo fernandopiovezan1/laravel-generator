@@ -40,7 +40,7 @@ class ModelGenerator extends BaseGenerator
     {
         return [
             'fillables'        => implode(','.infy_nl_tab(1, 2), $this->generateFillables()) . ',',
-            'casts'            => implode(','.infy_nl_tab(1, 2), $this->generateCasts()) . ',',
+            'casts'            => implode(','.infy_nl_tab(1, 3), $this->generateCasts()) . ',',
             'rules'            => implode(','.infy_nl_tab(1, 2), $this->generateRules()) . ',',
             'swaggerDocs'      => $this->fillDocs(),
             'customPrimaryKey' => $this->customPrimaryKey(),
@@ -252,19 +252,23 @@ class ModelGenerator extends BaseGenerator
 
     public function generateCasts(): array
     {
+        $dont_require_fields = config('laravel_generator.options.hidden_fields', [])
+            + config('laravel_generator.options.excluded_fields', $this->excluded_fields);
+
         $casts = [];
 
         $timestamps = TableFieldsGenerator::getTimestampFieldNames();
 
         foreach ($this->config->fields as $field) {
-            if (in_array($field->name, $timestamps)) {
+            if (in_array($field->name, $timestamps) || in_array($field->name, $dont_require_fields)) {
                 continue;
             }
 
             $rule = "'".$field->name."' => ";
 
-            switch (strtolower($field->dbType)) {
+            switch (strtolower(explode(',', $field->dbType)[0])) {
                 case 'integer':
+                case 'int':
                 case 'increments':
                 case 'smallinteger':
                 case 'long':

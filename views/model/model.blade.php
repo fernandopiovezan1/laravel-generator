@@ -4,16 +4,21 @@
 
 {{'namespace App\Models;'}}
 
-@if($config->options->softDelete){{'use App\Traits\CustomSoftDelete;' }}@nls(1)@endif
 @if($config->options->tests or $config->options->factory){{'use Illuminate\Database\Eloquent\Factories\HasFactory;' }}@nls(1)@endif
+@if(str_contains($relations, 'BelongsTo') == false){{ 'use Illuminate\Database\Eloquent\Relations\BelongsTo;' }}@nls(1) @endif
+@if(str_contains($relations, 'BelongsToMany')){{ 'use Illuminate\Database\Eloquent\Relations\BelongsToMany;' }}@nls(1) @endif
+@if(str_contains($relations, 'HasMany')){{ 'use Illuminate\Database\Eloquent\Relations\HasMany;' }}@nls(1) @endif
+@if(str_contains($relations, 'HasManyThrough')){{ 'use Illuminate\Database\Eloquent\Relations\HasManyThrough;' }}@nls(1) @endif
+@if(str_contains($relations, 'HasOne')){{ 'use Illuminate\Database\Eloquent\Relations\HasOne;' }}@nls(1) @endif
+@if($config->options->softDelete){{'use Illuminate\Database\Eloquent\SoftDeletes;' }}@nls(1)@endif
 {{'use Rennokki\QueryCache\Traits\QueryCacheable;'}}
 
 @if(isset($swaggerDocs)){!! $swaggerDocs  !!}@endif
 class {{ $config->modelNames->name }} extends BaseModel
 {
-@if($config->options->softDelete) {{ infy_tab(3).'use CustomSoftDelete;' }}@nls(1)@endif
 @if($config->options->tests or $config->options->factory){{infy_tab(4).'use HasFactory;' }}@nls(1)@endif
 {{ infy_tab(4).'use QueryCacheable;' }}
+@if($config->options->softDelete) {{ infy_tab(3).'use SoftDeletes;' }}@nls(1)@endif
 
     /**
      * Time in seconds to live Cache
