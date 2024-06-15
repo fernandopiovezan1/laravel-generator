@@ -349,7 +349,7 @@ class ModelGenerator extends BaseGenerator
 
         foreach ($this->config->fields as $field) {
             if (!($field->isPrimary) && !in_array($field->name, $dont_require_fields)) {
-                $fieldDescription = "'".$field->name."' => ['description' => '".$field->description."']";
+                $fieldDescription = "'{$field->name}' => '{$field->description}'";
                 $fieldDescriptions[] = $fieldDescription;
             }
         }
