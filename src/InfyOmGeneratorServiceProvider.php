@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use InfyOm\Generator\Commands\API\APIControllerGeneratorCommand;
 use InfyOm\Generator\Commands\API\APIGeneratorCommand;
 use InfyOm\Generator\Commands\API\APIRequestsGeneratorCommand;
+use InfyOm\Generator\Commands\API\APISwaggerGeneratorCommand;
 use InfyOm\Generator\Commands\API\TestsGeneratorCommand;
 use InfyOm\Generator\Commands\APIScaffoldGeneratorCommand;
 use InfyOm\Generator\Commands\Common\MigrationGeneratorCommand;
@@ -96,6 +97,7 @@ class InfyOmGeneratorServiceProvider extends ServiceProvider
             APIGeneratorCommand::class,
             APIControllerGeneratorCommand::class,
             APIRequestsGeneratorCommand::class,
+            APISwaggerGeneratorCommand::class,
             TestsGeneratorCommand::class,
 
             MigrationGeneratorCommand::class,

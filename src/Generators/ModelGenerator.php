@@ -146,7 +146,7 @@ class ModelGenerator extends BaseGenerator
         ]);
     }
 
-    protected function generateRequiredFields(): array
+    public function generateRequiredFields(): array
     {
         $requiredFields = [];
 
@@ -155,7 +155,11 @@ class ModelGenerator extends BaseGenerator
                 if (!empty($field->validations)) {
                     if (Str::contains($field->validations, 'required')) {
                         $requiredFields[] = '"'.$field->name.'"';
+                        break;
                     }
+                }
+                if ($field->isNotNull) {
+                    $requiredFields[] = '"'.$field->name.'"';
                 }
             }
         }
@@ -313,7 +317,7 @@ class ModelGenerator extends BaseGenerator
         return $casts;
     }
 
-    protected function generateRelations(): string
+    public function generateRelations(): string
     {
         $relations = [];
 

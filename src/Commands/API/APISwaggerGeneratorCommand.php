@@ -3,38 +3,34 @@
 namespace InfyOm\Generator\Commands\API;
 
 use InfyOm\Generator\Commands\BaseCommand;
-use InfyOm\Generator\Generators\API\APITestGenerator;
-use InfyOm\Generator\Generators\RepositoryTestGenerator;
+use InfyOm\Generator\Generators\SwaggerGenerator;
 
-class TestsGeneratorCommand extends BaseCommand
+class APISwaggerGeneratorCommand extends BaseCommand
 {
     /**
      * The console command name.
      *
      * @var string
      */
-    protected $name = 'infyom.api:tests';
+    protected $name = 'infyom.api:swagger';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create tests command';
+    protected $description = 'Create swagger documentation for given model';
 
+    /**
+     * Execute the command.
+     *
+     * @return void
+     */
     public function handle()
     {
         parent::handle();
-
-        /** @var RepositoryTestGenerator $repositoryTestGenerator */
-//        $repositoryTestGenerator = app(RepositoryTestGenerator::class);
-//        $repositoryTestGenerator->generate();
-
-        /** @var APITestGenerator $apiTestGenerator */
-        $apiTestGenerator = app(APITestGenerator::class);
-        $apiTestGenerator->generate();
-
-        $this->performPostActions();
+        $swaggerGenerator = app(SwaggerGenerator::class);
+        $swaggerGenerator->generate();
     }
 
     /**

@@ -33,6 +33,8 @@ class Create{{ $config->modelNames->name }}APIRequest extends BaseAPIRequest
      */
     public function rules(): array
     {
-        return {{ $config->modelNames->name }}::$rules;
+        return [
+            {!! $rules !!}
+        ];
     }
 }

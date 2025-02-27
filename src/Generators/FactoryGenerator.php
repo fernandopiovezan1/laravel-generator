@@ -22,7 +22,7 @@ class FactoryGenerator extends BaseGenerator
             + config('laravel_generator.options.excluded_fields');
         $clean = array_search('company_id', $this->removeFields);
         unset($this->removeFields[$clean]);
-        
+
         //setup relations if available
         //assumes relation fields are tailed with _id if not supplied
         if (property_exists($this->config, 'relations')) {
@@ -72,11 +72,10 @@ class FactoryGenerator extends BaseGenerator
         $fields = [];
 
         //get model validation rules
-        $class = $this->config->namespaces->model.'\\'.$this->config->modelNames->name;
-        $rules = [];
-        if (class_exists($class)) {
-            $rules = $class::$rules;
-        }
+        /** @var ModelGenerator $modelGenerator */
+        $modelGenerator = app(ModelGenerator::class);
+        $rules = $modelGenerator->generateRules();
+
         $relations = array_keys($this->relations);
 
         foreach ($this->config->fields as $field) {
@@ -87,7 +86,7 @@ class FactoryGenerator extends BaseGenerator
             if (in_array($field->name, $this->removeFields)) {
                 continue;
             }
-            
+
             $fieldData = "'".$field->name."' => ".'$this->faker->';
             $rule = null;
             if (isset($rules[$field->name])) {

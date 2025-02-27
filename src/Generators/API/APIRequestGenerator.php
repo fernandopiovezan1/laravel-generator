@@ -41,14 +41,21 @@ class APIRequestGenerator extends BaseGenerator
         $modelGenerator = app(ModelGenerator::class);
         $rules = $modelGenerator->generateUniqueRules();
 
-        $templateData = view('laravel-generator::api.request.update', [
-            'uniqueRules' => $rules,
-        ])->render();
+        $templateData = view('laravel-generator::api.request.update', $this->variables())->render();
 
         g_filesystem()->createFile($this->path . '/' . $this->updateFileName, $templateData);
 
         $this->config->commandComment(infy_nl().'Update Request created: ');
         $this->config->commandInfo($this->updateFileName);
+    }
+
+    public function variables(): array
+    {
+        /** @var ModelGenerator $modelGenerator */
+        $modelGenerator = app(ModelGenerator::class);
+        return [
+            'rules' => implode(','.infy_nl_tab(1, 3), $modelGenerator->generateRules()) . ',',
+        ];
     }
 
     public function rollback()

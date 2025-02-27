@@ -105,10 +105,9 @@ class BaseCommand extends Command
         }
 
         if (!$this->isSkip('tests') and $this->config->options->tests) {
-            if ($this->config->options->repositoryPattern) {
-                $repositoryTestGenerator = app(RepositoryTestGenerator::class);
-                $repositoryTestGenerator->generate();
-            }
+//            if ($this->config->options->repositoryPattern) {
+//                $repositoryTestGenerator = app(RepositoryTestGenerator::class);
+//            }
 
             $apiTestGenerator = app(APITestGenerator::class);
             $apiTestGenerator->generate();
@@ -124,10 +123,10 @@ class BaseCommand extends Command
             $serviceGenerator->generate();
         }
 
-        if ($this->config->options->servicePattern && $this->config->options->tests) {
-            $serviceTestGenerator = app(ServiceTestGenerator::class);
-            $serviceTestGenerator->generate();
-        }
+//        if ($this->config->options->servicePattern && $this->config->options->tests) {
+//            $serviceTestGenerator = app(ServiceTestGenerator::class);
+//            $serviceTestGenerator->generate();
+//        }
     }
 
     public function generateFrontItems()

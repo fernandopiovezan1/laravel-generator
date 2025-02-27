@@ -33,13 +33,6 @@ class {{ $config->modelNames->name }} extends BaseModel
         {!! $fillables !!}
     ];
 
-    /**
-     * The validation rules.
-     */
-    public static array $rules = [
-        {!! $rules !!}
-    ];
-
     public $table = '{{ $config->tableName }}';
 
 @if($customPrimaryKey)@tab()protected $primaryKey = '{{ $customPrimaryKey }}';@nls(2)@endif
